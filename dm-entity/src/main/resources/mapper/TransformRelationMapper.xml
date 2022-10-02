@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cooler.ai.platform.dao.TransformRelationMapper" >
+  <resultMap id="BaseResultMap" type="com.cooler.ai.platform.entity.TransformRelation" >
+    <constructor >
+      <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="transform_relation_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="context_state_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="context_intent_names" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="transform_intent_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="enable" jdbcType="TINYINT" javaType="java.lang.Byte" />
+      <arg column="msg" jdbcType="VARCHAR" javaType="java.lang.String" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, transform_relation_name, context_state_id, context_intent_names, transform_intent_name, 
+    enable, msg
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from transform_relation
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from transform_relation
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.cooler.ai.platform.entity.TransformRelation" >
+    insert into transform_relation (id, transform_relation_name, context_state_id, 
+      context_intent_names, transform_intent_name, 
+      enable, msg)
+    values (#{id,jdbcType=INTEGER}, #{transformRelationName,jdbcType=VARCHAR}, #{contextStateId,jdbcType=INTEGER}, 
+      #{contextIntentNames,jdbcType=VARCHAR}, #{transformIntentName,jdbcType=VARCHAR}, 
+      #{enable,jdbcType=TINYINT}, #{msg,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.cooler.ai.platform.entity.TransformRelation" >
+    insert into transform_relation
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="transformRelationName != null" >
+        transform_relation_name,
+      </if>
+      <if test="contextStateId != null" >
+        context_state_id,
+      </if>
+      <if test="contextIntentNames != null" >
+        context_intent_names,
+      </if>
+      <if test="transformIntentName != null" >
+        transform_intent_name,
+      </if>
+      <if test="enable != null" >
+        enable,
+      </if>
+      <if test="msg != null" >
+        msg,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="transformRelationName != null" >
+        #{transformRelationName,jdbcType=VARCHAR},
+      </if>
+      <if test="contextStateId != null" >
+        #{contextStateId,jdbcType=INTEGER},
+      </if>
+      <if test="contextIntentNames != null" >
+        #{contextIntentNames,jdbcType=VARCHAR},
+      </if>
+      <if test="transformIntentName != null" >
+        #{transformIntentName,jdbcType=VARCHAR},
+      </if>
+      <if test="enable != null" >
+        #{enable,jdbcType=TINYINT},
+      </if>
+      <if test="msg != null" >
+        #{msg,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.cooler.ai.platform.entity.TransformRelation" >
+    update transform_relation
+    <set >
+      <if test="transformRelationName != null" >
+        transform_relation_name = #{transformRelationName,jdbcType=VARCHAR},
+      </if>
+      <if test="contextStateId != null" >
+        context_state_id = #{contextStateId,jdbcType=INTEGER},
+      </if>
+      <if test="contextIntentNames != null" >
+        context_intent_names = #{contextIntentNames,jdbcType=VARCHAR},
+      </if>
+      <if test="transformIntentName != null" >
+        transform_intent_name = #{transformIntentName,jdbcType=VARCHAR},
+      </if>
+      <if test="enable != null" >
+        enable = #{enable,jdbcType=TINYINT},
+      </if>
+      <if test="msg != null" >
+        msg = #{msg,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.cooler.ai.platform.entity.TransformRelation" >
+    update transform_relation
+    set transform_relation_name = #{transformRelationName,jdbcType=VARCHAR},
+      context_state_id = #{contextStateId,jdbcType=INTEGER},
+      context_intent_names = #{contextIntentNames,jdbcType=VARCHAR},
+      transform_intent_name = #{transformIntentName,jdbcType=VARCHAR},
+      enable = #{enable,jdbcType=TINYINT},
+      msg = #{msg,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <!-- 业务相关 -->
+  <!-- state_id = 4，是global_any的状态，代表任意状态 -->
+  <select id="selectByContextStateId" resultMap="BaseResultMap"  >
+    select
+    <include refid="Base_Column_List" />
+    from transform_relation
+    where enable = 1 and (context_state_id = #{contextStateId,jdbcType=INTEGER} or context_state_id = 4)
+  </select>
+
+</mapper>

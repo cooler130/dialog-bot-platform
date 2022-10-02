@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cooler.ai.platform.dao.PolicyMapper" >
+  <resultMap id="BaseResultMap" type="com.cooler.ai.platform.entity.Policy" >
+    <constructor >
+      <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="policy_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="intent_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="state_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="start_action_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="enable" jdbcType="TINYINT" javaType="java.lang.Byte" />
+      <arg column="msg" jdbcType="VARCHAR" javaType="java.lang.String" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, policy_name, intent_name, state_id, start_action_id, enable, msg
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from policy
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from policy
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.cooler.ai.platform.entity.Policy" >
+    insert into policy (id, policy_name, intent_name, 
+      state_id, start_action_id, enable, 
+      msg)
+    values (#{id,jdbcType=INTEGER}, #{policyName,jdbcType=VARCHAR}, #{intentName,jdbcType=VARCHAR}, 
+      #{stateId,jdbcType=INTEGER}, #{startActionId,jdbcType=INTEGER}, #{enable,jdbcType=TINYINT}, 
+      #{msg,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.cooler.ai.platform.entity.Policy" >
+    insert into policy
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="policyName != null" >
+        policy_name,
+      </if>
+      <if test="intentName != null" >
+        intent_name,
+      </if>
+      <if test="stateId != null" >
+        state_id,
+      </if>
+      <if test="startActionId != null" >
+        start_action_id,
+      </if>
+      <if test="enable != null" >
+        enable,
+      </if>
+      <if test="msg != null" >
+        msg,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="policyName != null" >
+        #{policyName,jdbcType=VARCHAR},
+      </if>
+      <if test="intentName != null" >
+        #{intentName,jdbcType=VARCHAR},
+      </if>
+      <if test="stateId != null" >
+        #{stateId,jdbcType=INTEGER},
+      </if>
+      <if test="startActionId != null" >
+        #{startActionId,jdbcType=INTEGER},
+      </if>
+      <if test="enable != null" >
+        #{enable,jdbcType=TINYINT},
+      </if>
+      <if test="msg != null" >
+        #{msg,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.cooler.ai.platform.entity.Policy" >
+    update policy
+    <set >
+      <if test="policyName != null" >
+        policy_name = #{policyName,jdbcType=VARCHAR},
+      </if>
+      <if test="intentName != null" >
+        intent_name = #{intentName,jdbcType=VARCHAR},
+      </if>
+      <if test="stateId != null" >
+        state_id = #{stateId,jdbcType=INTEGER},
+      </if>
+      <if test="startActionId != null" >
+        start_action_id = #{startActionId,jdbcType=INTEGER},
+      </if>
+      <if test="enable != null" >
+        enable = #{enable,jdbcType=TINYINT},
+      </if>
+      <if test="msg != null" >
+        msg = #{msg,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.cooler.ai.platform.entity.Policy" >
+    update policy
+    set policy_name = #{policyName,jdbcType=VARCHAR},
+      intent_name = #{intentName,jdbcType=VARCHAR},
+      state_id = #{stateId,jdbcType=INTEGER},
+      start_action_id = #{startActionId,jdbcType=INTEGER},
+      enable = #{enable,jdbcType=TINYINT},
+      msg = #{msg,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <!-- 业务相关 -->
+  <select id="selectByStateId" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from policy
+    where state_id = #{stateId,jdbcType=INTEGER} and  enable = 1
+  </select>
+
+</mapper>

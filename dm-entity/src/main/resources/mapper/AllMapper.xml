@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.meituan.ai.platform.dao.AllMapper" >
+
+    <resultMap id="ActionMap" type="com.cooler.ai.platform.entity.Action" >
+        <constructor >
+            <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="action_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+            <arg column="action_type" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="process_code" jdbcType="VARCHAR" javaType="java.lang.String" />
+            <arg column="default_reply" jdbcType="VARCHAR" javaType="java.lang.String" />
+            <arg column="msg" jdbcType="VARCHAR" javaType="java.lang.String" />
+        </constructor>
+    </resultMap>
+
+    <resultMap id="ConditionKVMap" type="com.cooler.ai.platform.entity.ConditionKV" >
+        <constructor >
+            <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="policy_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="condition_key" jdbcType="VARCHAR" javaType="java.lang.String" />
+            <arg column="relationship" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="condition_value" jdbcType="VARCHAR" javaType="java.lang.String" />
+            <arg column="group_num" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="logic_type" jdbcType="TINYINT" javaType="java.lang.Byte" />
+            <arg column="enable" jdbcType="TINYINT" javaType="java.lang.Byte" />
+            <arg column="msg" jdbcType="VARCHAR" javaType="java.lang.String" />
+        </constructor>
+    </resultMap>
+
+    <resultMap id="ConditionLogicMap" type="com.cooler.ai.platform.entity.ConditionLogic" >
+        <constructor >
+            <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="name" jdbcType="VARCHAR" javaType="java.lang.String" />
+            <arg column="transition_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="condition_rule_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="logic_type" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="group_num" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="enable" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="msg" jdbcType="VARCHAR" javaType="java.lang.String" />
+        </constructor>
+    </resultMap>
+
+    <resultMap id="ConditionRuleMap" type="com.cooler.ai.platform.entity.ConditionRule" >
+        <constructor >
+            <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="condition_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+            <arg column="params_type" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="params_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+            <arg column="task_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="rule_type" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="belief_threshold" jdbcType="REAL" javaType="java.lang.Float" />
+            <arg column="check_value" jdbcType="VARCHAR" javaType="java.lang.String" />
+            <arg column="check_relation_type" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="check_function_code" jdbcType="VARCHAR" javaType="java.lang.String" />
+            <arg column="recommend_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="enable" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="msg" jdbcType="VARCHAR" javaType="java.lang.String" />
+        </constructor>
+    </resultMap>
+
+    <resultMap id="PolicyMap" type="com.cooler.ai.platform.entity.Policy" >
+        <constructor >
+            <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="policy_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+            <arg column="state_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="intent_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="start_action_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="enable" jdbcType="TINYINT" javaType="java.lang.Byte" />
+            <arg column="msg" jdbcType="VARCHAR" javaType="java.lang.String" />
+        </constructor>
+    </resultMap>
+
+    <resultMap id="StateMap" type="com.cooler.ai.platform.entity.State" >
+        <constructor >
+            <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="state_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+            <arg column="domain_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="domain" jdbcType="VARCHAR" javaType="java.lang.String" />
+            <arg column="state_state" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="enable" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="msg" jdbcType="VARCHAR" javaType="java.lang.String" />
+        </constructor>
+    </resultMap>
+
+    <resultMap id="TaskMap" type="com.cooler.ai.platform.entity.Task" >
+        <constructor >
+            <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="task_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+        </constructor>
+    </resultMap>
+
+    <resultMap id="TransitionMap" type="com.cooler.ai.platform.entity.Transition" >
+        <constructor >
+            <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="transition_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+            <arg column="start_state_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="end_state_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="task_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="related_intent_names" jdbcType="VARCHAR" javaType="java.lang.String" />
+            <arg column="enable" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="msg" jdbcType="VARCHAR" javaType="java.lang.String" />
+        </constructor>
+    </resultMap>
+
+    <resultMap id="TransformRelationMap" type="com.cooler.ai.platform.entity.TransformRelation" >
+        <constructor >
+            <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="transform_relation_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+            <arg column="context_state_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+            <arg column="context_intent_names" jdbcType="VARCHAR" javaType="java.lang.String" />
+            <arg column="transform_intent_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+            <arg column="enable" jdbcType="TINYINT" javaType="java.lang.Byte" />
+            <arg column="msg" jdbcType="VARCHAR" javaType="java.lang.String" />
+        </constructor>
+    </resultMap>
+
+    <select id="selectAllAction" resultMap="ActionMap" >
+        select id, action_name, action_type, process_code, default_reply, msg
+        from action
+    </select>
+
+    <select id="selectAllConditionKV" resultMap="ConditionKVMap" >
+        select id, policy_id, condition_key, relationship, condition_value, group_num, logic_type, enable, msg
+        from condition_kv
+        where enable = 1
+    </select>
+
+    <select id="selectAllConditionLogic" resultMap="ConditionLogicMap" >
+        select id, name, transition_id, condition_rule_id, logic_type, group_num, enable, msg
+        from condition_logic
+        where enable = 1
+    </select>
+
+    <select id="selectAllConditionRule" resultMap="ConditionRuleMap" >
+        select id, condition_name, params_type, params_name, task_id, rule_type, belief_threshold, check_value, check_relation_type, check_function_code, recommend_id, enable, msg
+        from condition_rule
+        where enable = 1
+    </select>
+
+    <select id="selectAllPolicy" resultMap="PolicyMap" >
+        select id, policy_name, state_id, intent_id, start_action_id, enable, msg
+        from policy
+        where enable = 1
+    </select>
+
+    <select id="selectAllState" resultMap="StateMap" >
+        select id, state_name, domain_id, domain, state_state, enable, msg
+        from state
+        where enable = 1
+    </select>
+
+    <select id="selectAllTask" resultMap="TaskMap" >
+        select id, task_name
+        from task
+    </select>
+
+    <select id="selectAllTransition" resultMap="TransitionMap" >
+        select id, transition_name, start_state_id, end_state_id, task_id, related_intent_names, enable, msg
+        from transition
+        where enable = 1
+    </select>
+
+    <select id="selectAllTransformRelation" resultMap="TransformRelationMap" >
+        select id, transform_relation_name, context_state_id, context_intent_names, transform_intent_name, enable, msg
+        from transform_relation
+        where enable = 1
+    </select>
+
+</mapper>

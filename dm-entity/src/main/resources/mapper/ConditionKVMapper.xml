@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cooler.ai.platform.dao.ConditionKVMapper" >
+  <resultMap id="BaseResultMap" type="com.cooler.ai.platform.entity.ConditionKV" >
+    <constructor >
+      <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="policy_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="condition_key" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="relationship" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="condition_value" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="group_num" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="logic_type" jdbcType="TINYINT" javaType="java.lang.Byte" />
+      <arg column="enable" jdbcType="TINYINT" javaType="java.lang.Byte" />
+      <arg column="msg" jdbcType="VARCHAR" javaType="java.lang.String" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, policy_id, condition_key, relationship, condition_value, group_num, logic_type, 
+    enable, msg
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from condition_kv
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from condition_kv
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.cooler.ai.platform.entity.ConditionKV" >
+    insert into condition_kv (id, policy_id, condition_key, 
+      relationship, condition_value, group_num, 
+      logic_type, enable, msg
+      )
+    values (#{id,jdbcType=INTEGER}, #{policyId,jdbcType=INTEGER}, #{conditionKey,jdbcType=VARCHAR}, 
+      #{relationship,jdbcType=INTEGER}, #{conditionValue,jdbcType=VARCHAR}, #{groupNum,jdbcType=INTEGER}, 
+      #{logicType,jdbcType=TINYINT}, #{enable,jdbcType=TINYINT}, #{msg,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.cooler.ai.platform.entity.ConditionKV" >
+    insert into condition_kv
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="policyId != null" >
+        policy_id,
+      </if>
+      <if test="conditionKey != null" >
+        condition_key,
+      </if>
+      <if test="relationship != null" >
+        relationship,
+      </if>
+      <if test="conditionValue != null" >
+        condition_value,
+      </if>
+      <if test="groupNum != null" >
+        group_num,
+      </if>
+      <if test="logicType != null" >
+        logic_type,
+      </if>
+      <if test="enable != null" >
+        enable,
+      </if>
+      <if test="msg != null" >
+        msg,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="policyId != null" >
+        #{policyId,jdbcType=INTEGER},
+      </if>
+      <if test="conditionKey != null" >
+        #{conditionKey,jdbcType=VARCHAR},
+      </if>
+      <if test="relationship != null" >
+        #{relationship,jdbcType=INTEGER},
+      </if>
+      <if test="conditionValue != null" >
+        #{conditionValue,jdbcType=VARCHAR},
+      </if>
+      <if test="groupNum != null" >
+        #{groupNum,jdbcType=INTEGER},
+      </if>
+      <if test="logicType != null" >
+        #{logicType,jdbcType=TINYINT},
+      </if>
+      <if test="enable != null" >
+        #{enable,jdbcType=TINYINT},
+      </if>
+      <if test="msg != null" >
+        #{msg,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.cooler.ai.platform.entity.ConditionKV" >
+    update condition_kv
+    <set >
+      <if test="policyId != null" >
+        policy_id = #{policyId,jdbcType=INTEGER},
+      </if>
+      <if test="conditionKey != null" >
+        condition_key = #{conditionKey,jdbcType=VARCHAR},
+      </if>
+      <if test="relationship != null" >
+        relationship = #{relationship,jdbcType=INTEGER},
+      </if>
+      <if test="conditionValue != null" >
+        condition_value = #{conditionValue,jdbcType=VARCHAR},
+      </if>
+      <if test="groupNum != null" >
+        group_num = #{groupNum,jdbcType=INTEGER},
+      </if>
+      <if test="logicType != null" >
+        logic_type = #{logicType,jdbcType=TINYINT},
+      </if>
+      <if test="enable != null" >
+        enable = #{enable,jdbcType=TINYINT},
+      </if>
+      <if test="msg != null" >
+        msg = #{msg,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.cooler.ai.platform.entity.ConditionKV" >
+    update condition_kv
+    set policy_id = #{policyId,jdbcType=INTEGER},
+      condition_key = #{conditionKey,jdbcType=VARCHAR},
+      relationship = #{relationship,jdbcType=INTEGER},
+      condition_value = #{conditionValue,jdbcType=VARCHAR},
+      group_num = #{groupNum,jdbcType=INTEGER},
+      logic_type = #{logicType,jdbcType=TINYINT},
+      enable = #{enable,jdbcType=TINYINT},
+      msg = #{msg,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <!-- 业务相关 -->
+  <select id="getConditionKVsByPolicyIds" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from condition_kv
+    where policy_id IN
+    <foreach collection="policyIds" open="(" separator="," close=")" item="policyId">
+      #{policyId,jdbcType=INTEGER}
+    </foreach>
+    and enable = 1
+  </select>
+
+</mapper>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+       http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+    <dubbo:application name="dmFacade_consumer"/>
+    <!--dev环境的zk-->
+    <dubbo:registry address="zookeeper://127.0.0.1:2181" check="false"></dubbo:registry>
+
+    <!--<dubbo:registry address="zookeeper://192.168.10.20:2181?backup=192.168.10.21:2181,192.168.10.22:2181" check="false"></dubbo:registry>-->
+
+    <!-- 要引用的服务，注意这里的每一个服务都应该声明一个group，group是一个分组名，同时也是bot名，因为每一个bot实际上发布的服务类和服务名就是一个，就是dmFacade，在服务端设置了group，所以只能靠此处的group区分了。 -->
+
+    <dubbo:reference id="nlgFacade" interface="com.cooler.ai.nlg.facade.NlgFacade" group="nlg" version="1.0-SNAPSHOT" />
+
+</beans>

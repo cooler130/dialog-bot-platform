@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd ">
+
+    <bean id="taskActionsHolder" class="com.cooler.ai.platform.model.TaskActionsHolder">
+        <property name="taskActionMap">
+            <map>
+                <!-- 处理动作 -->
+                <entry key="getWelcomeScript" value-ref="getWelcomeScriptTaskAction"/>
+                <entry key="getRepeatScript" value-ref="getRepeatScriptTaskAction"/>
+                <entry key="getIssue" value-ref="getIssueTaskAction"/>
+                <entry key="getByeScript" value-ref="getByeScriptTaskAction"/>
+                <entry key="getRedeemScript" value-ref="getRedeemScriptTaskAction"/>
+                <entry key="getTimeoutScript" value-ref="getTimeoutScriptTaskAction"/>
+                <entry key="requiryResultScript" value-ref="requiryResultScriptTaskAction"/>
+                <entry key="getNoScript" value-ref="getNoScriptTaskAction"/>
+                <entry key="getFAQScript" value-ref="getFAQScriptTaskAction"/>
+
+                <!-- 交互动作 -->
+                <entry key="reportScript" value-ref="reportScriptTaskAction"/>
+                <entry key="default" value-ref="defaultTaskAction"/>
+                <entry key="inquiry" value-ref="inquiryTaskAction" />
+            </map>
+        </property>
+    </bean>
+
+    <bean id="conditionContextService" class="com.cooler.ai.dm.external.ConditionContextServiceImpl">
+        <property name="dataTaskActionMap">
+            <map>
+                <entry key="repeat_count" value-ref="repeatCountDataTaskAction"/>
+                <entry key="timeout_count" value-ref="timeoutCountDataTaskAction"/>
+                <entry key="unknown_count" value-ref="unKnownCountDataTaskAction"/>
+                <entry key="unreport_issue_count" value-ref="unReportIssueCountDataTaskAction"/>
+                <entry key="redeem_count" value-ref="redeemCountDataTaskAction"/>
+            </map>
+        </property>
+    </bean>
+
+</beans>

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cooler.ai.platform.dao.ActionMapper" >
+  <resultMap id="BaseResultMap" type="com.cooler.ai.platform.entity.Action" >
+    <constructor >
+      <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="action_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="action_type" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="process_code" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="default_reply" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="msg" jdbcType="VARCHAR" javaType="java.lang.String" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, action_name, action_type, process_code, default_reply, msg
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from action
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from action
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.cooler.ai.platform.entity.Action" >
+    insert into action (id, action_name, action_type, 
+      process_code, default_reply, msg
+      )
+    values (#{id,jdbcType=INTEGER}, #{actionName,jdbcType=VARCHAR}, #{actionType,jdbcType=INTEGER}, 
+      #{processCode,jdbcType=VARCHAR}, #{defaultReply,jdbcType=VARCHAR}, #{msg,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.cooler.ai.platform.entity.Action" >
+    insert into action
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="actionName != null" >
+        action_name,
+      </if>
+      <if test="actionType != null" >
+        action_type,
+      </if>
+      <if test="processCode != null" >
+        process_code,
+      </if>
+      <if test="defaultReply != null" >
+        default_reply,
+      </if>
+      <if test="msg != null" >
+        msg,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="actionName != null" >
+        #{actionName,jdbcType=VARCHAR},
+      </if>
+      <if test="actionType != null" >
+        #{actionType,jdbcType=INTEGER},
+      </if>
+      <if test="processCode != null" >
+        #{processCode,jdbcType=VARCHAR},
+      </if>
+      <if test="defaultReply != null" >
+        #{defaultReply,jdbcType=VARCHAR},
+      </if>
+      <if test="msg != null" >
+        #{msg,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.cooler.ai.platform.entity.Action" >
+    update action
+    <set >
+      <if test="actionName != null" >
+        action_name = #{actionName,jdbcType=VARCHAR},
+      </if>
+      <if test="actionType != null" >
+        action_type = #{actionType,jdbcType=INTEGER},
+      </if>
+      <if test="processCode != null" >
+        process_code = #{processCode,jdbcType=VARCHAR},
+      </if>
+      <if test="defaultReply != null" >
+        default_reply = #{defaultReply,jdbcType=VARCHAR},
+      </if>
+      <if test="msg != null" >
+        msg = #{msg,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.cooler.ai.platform.entity.Action" >
+    update action
+    set action_name = #{actionName,jdbcType=VARCHAR},
+      action_type = #{actionType,jdbcType=INTEGER},
+      process_code = #{processCode,jdbcType=VARCHAR},
+      default_reply = #{defaultReply,jdbcType=VARCHAR},
+      msg = #{msg,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <!-- 业务相关 -->
+  <select id="selectByActionIds" resultMap="BaseResultMap" >
+    select
+    <include refid="Base_Column_List" />
+    from action
+    where id IN
+    <foreach collection="actionIds" item="actionId" open="(" separator="," close=")">
+      #{actionId,jdbcType=INTEGER}
+    </foreach>
+  </select>
+
+  <select id="getActionById" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select
+    <include refid="Base_Column_List" />
+    from action
+    where id = #{actionId,jdbcType=INTEGER}
+  </select>
+
+
+  <select id="getActionByProcessCode" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select
+    <include refid="Base_Column_List" />
+    from action
+    where process_code = #{processCode,jdbcType=INTEGER}
+  </select>
+
+
+</mapper>

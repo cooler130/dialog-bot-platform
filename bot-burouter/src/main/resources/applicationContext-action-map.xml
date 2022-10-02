@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd ">
+
+    <bean id="taskActionsHolder" class="com.cooler.ai.platform.model.TaskActionsHolder">
+        <property name="taskActionMap">
+            <map>
+                <!-- 处理动作 -->
+                <entry key="operate" value-ref="operateTaskAction"/>
+
+                <!-- 交互动作 -->
+                <entry key="answer" value-ref="answerTaskAction"/>
+                <entry key="default" value-ref="defaultTaskAction"/>
+                <entry key="inquiry" value-ref="inquiryTaskAction" />
+            </map>
+        </property>
+    </bean>
+
+    <bean id="conditionContextService" class="com.cooler.ai.dm.external.ConditionContextServiceImpl">
+        <property name="dataTaskActionMap">
+            <map>
+                <entry key="tq_belief" value-ref="tqBeliefDataTaskAction"/>
+                <entry key="order_belief" value-ref="orderBeliefDataTaskAction"/>
+                <entry key="bu_belief" value-ref="buBeliefDataTaskAction"/>
+
+                <entry key="tq_count" value-ref="tqCountDataTaskAction"/>
+                <entry key="order_count" value-ref="orderCountDataTaskAction"/>
+                <entry key="bu_count" value-ref="buCountDataTaskAction"/>
+
+                <entry key="is_about_order" value-ref="isAOrderDataTaskAction"/>
+                <entry key="people_service_count" value-ref="pscDataTaskAction"/>
+            </map>
+        </property>
+    </bean>
+
+</beans>

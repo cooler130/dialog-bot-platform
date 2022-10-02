@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cooler.ai.platform.dao.TransitionMapper" >
+  <resultMap id="BaseResultMap" type="com.cooler.ai.platform.entity.Transition" >
+    <constructor >
+      <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="transition_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="start_state_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="end_state_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="task_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="related_intent_names" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="enable" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="msg" jdbcType="VARCHAR" javaType="java.lang.String" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, transition_name, start_state_id, end_state_id, task_name, related_intent_names, 
+    enable, msg
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from transition
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from transition
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.cooler.ai.platform.entity.Transition" >
+    insert into transition (id, transition_name, start_state_id, 
+      end_state_id, task_name, related_intent_names, 
+      enable, msg)
+    values (#{id,jdbcType=INTEGER}, #{transitionName,jdbcType=VARCHAR}, #{startStateId,jdbcType=INTEGER}, 
+      #{endStateId,jdbcType=INTEGER}, #{taskName,jdbcType=VARCHAR}, #{relatedIntentNames,jdbcType=VARCHAR}, 
+      #{enable,jdbcType=INTEGER}, #{msg,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.cooler.ai.platform.entity.Transition" >
+    insert into transition
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="transitionName != null" >
+        transition_name,
+      </if>
+      <if test="startStateId != null" >
+        start_state_id,
+      </if>
+      <if test="endStateId != null" >
+        end_state_id,
+      </if>
+      <if test="taskName != null" >
+        task_name,
+      </if>
+      <if test="relatedIntentNames != null" >
+        related_intent_names,
+      </if>
+      <if test="enable != null" >
+        enable,
+      </if>
+      <if test="msg != null" >
+        msg,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="transitionName != null" >
+        #{transitionName,jdbcType=VARCHAR},
+      </if>
+      <if test="startStateId != null" >
+        #{startStateId,jdbcType=INTEGER},
+      </if>
+      <if test="endStateId != null" >
+        #{endStateId,jdbcType=INTEGER},
+      </if>
+      <if test="taskName != null" >
+        #{taskName,jdbcType=VARCHAR},
+      </if>
+      <if test="relatedIntentNames != null" >
+        #{relatedIntentNames,jdbcType=VARCHAR},
+      </if>
+      <if test="enable != null" >
+        #{enable,jdbcType=INTEGER},
+      </if>
+      <if test="msg != null" >
+        #{msg,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.cooler.ai.platform.entity.Transition" >
+    update transition
+    <set >
+      <if test="transitionName != null" >
+        transition_name = #{transitionName,jdbcType=VARCHAR},
+      </if>
+      <if test="startStateId != null" >
+        start_state_id = #{startStateId,jdbcType=INTEGER},
+      </if>
+      <if test="endStateId != null" >
+        end_state_id = #{endStateId,jdbcType=INTEGER},
+      </if>
+      <if test="taskName != null" >
+        task_name = #{taskName,jdbcType=VARCHAR},
+      </if>
+      <if test="relatedIntentNames != null" >
+        related_intent_names = #{relatedIntentNames,jdbcType=VARCHAR},
+      </if>
+      <if test="enable != null" >
+        enable = #{enable,jdbcType=INTEGER},
+      </if>
+      <if test="msg != null" >
+        msg = #{msg,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.cooler.ai.platform.entity.Transition" >
+    update transition
+    set transition_name = #{transitionName,jdbcType=VARCHAR},
+      start_state_id = #{startStateId,jdbcType=INTEGER},
+      end_state_id = #{endStateId,jdbcType=INTEGER},
+      task_name = #{taskName,jdbcType=VARCHAR},
+      related_intent_names = #{relatedIntentNames,jdbcType=VARCHAR},
+      enable = #{enable,jdbcType=INTEGER},
+      msg = #{msg,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <!-- 业务相关 -->
+  <select id="selectByTaskStartStateId" resultMap="BaseResultMap" >
+    select
+    <include refid="Base_Column_List" />
+    from transition
+    where task_name = #{taskName,jdbcType=INTEGER} and start_state_id = #{currentStateId,jdbcType=INTEGER} and enable = 1
+  </select>
+
+  <select id="selectByTaskName" resultMap="BaseResultMap" >
+    select
+    <include refid="Base_Column_List" />
+    from transition
+    where task_name = #{taskName,jdbcType=INTEGER} and enable = 1
+  </select>
+
+</mapper>

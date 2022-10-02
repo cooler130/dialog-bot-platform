@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd ">
+
+    <bean id="taskActionsHolder" class="com.cooler.ai.platform.model.TaskActionsHolder">
+        <property name="taskActionMap">
+            <map>
+                <!-- 处理动作 -->
+                <entry key="createWelcomeView" value-ref="createWelcomeViewTaskAction"/>
+                <entry key="searchFaq" value-ref="searchFaqTaskAction"/>
+
+                <entry key="searchPoiList" value-ref="searchPoiListTaskAction"/>
+                <entry key="sortPoiList" value-ref="sortPoiListTaskAction"/>
+                <entry key="addSkuShoppingcart" value-ref="selectSkuTaskAction"/>
+
+                <entry key="searchSkuList" value-ref="searchSkuListTaskAction"/>
+                <entry key="sortSkuList" value-ref="sortSkuListTaskAction"/>
+
+                <entry key="selectPoi" value-ref="selectPoiTaskAction"/>
+                <entry key="selectSku" value-ref="selectSkuTaskAction"/>
+
+                <entry key="operateShoppingcart" value-ref="operateShoppingcartTaskAction"/>
+                <entry key="createOrder" value-ref="createOrderTaskAction"/>
+                <entry key="createPreorder" value-ref="createPreorderTaskAction"/>
+
+                <entry key="payAndObtainQRcode" value-ref="payAndObtainQRcodeTaskAction"/>
+
+
+                <!-- 交互动作 -->
+                <entry key="showWelcomeView" value-ref="showWelcomeViewTaskAction"/>
+                <entry key="showPoiList" value-ref="showPoiListTaskAction"/>
+                <entry key="showSkuList" value-ref="showSkuListTaskAction"/>
+                <entry key="showShoppingcart" value-ref="showShoppingcartTaskAction"/>
+
+                <entry key="showPreorder" value-ref="showPreorderTaskAction"/>
+                <entry key="showOrder" value-ref="showOrderTaskAction"/>
+                <entry key="showQRCode" value-ref="showQRCodeTaskAction"/>
+
+                <entry key="showFaqAnswer" value-ref="showFaqAnswerTaskAction"/>
+
+                <entry key="default" value-ref="defaultTaskAction"/>
+                <entry key="inquiry" value-ref="inquiryTaskAction" />
+
+            </map>
+        </property>
+    </bean>
+
+    <bean id="conditionContextService" class="com.cooler.ai.dm.external.ConditionContextServiceImpl">
+        <property name="dataTaskActionMap">
+            <map>
+                <entry key="is_beyond_delivery_price" value-ref="isBeyondDeliveryPriceDataTaskAction"/>
+                <entry key="has_order" value-ref="hasOrderDataTaskAction"/>
+                <entry key="address" value-ref="addressDataTaskAction"/>
+            </map>
+        </property>
+    </bean>
+
+</beans>

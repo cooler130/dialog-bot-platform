@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cooler.ai.platform.dao.ConditionLogicMapper" >
+  <resultMap id="BaseResultMap" type="com.cooler.ai.platform.entity.ConditionLogic" >
+    <constructor >
+      <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="transition_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="condition_rule_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="logic_type" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="nopass_notice" jdbcType="TINYINT" javaType="java.lang.Byte" />
+      <arg column="group_num" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="enable" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="msg" jdbcType="VARCHAR" javaType="java.lang.String" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, name, transition_id, condition_rule_id, logic_type, nopass_notice, group_num, 
+    enable, msg
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from condition_logic
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from condition_logic
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.cooler.ai.platform.entity.ConditionLogic" >
+    insert into condition_logic (id, name, transition_id, 
+      condition_rule_id, logic_type, nopass_notice, 
+      group_num, enable, msg
+      )
+    values (#{id,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{transitionId,jdbcType=INTEGER}, 
+      #{conditionRuleId,jdbcType=INTEGER}, #{logicType,jdbcType=INTEGER}, #{nopassNotice,jdbcType=TINYINT}, 
+      #{groupNum,jdbcType=INTEGER}, #{enable,jdbcType=INTEGER}, #{msg,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.cooler.ai.platform.entity.ConditionLogic" >
+    insert into condition_logic
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="name != null" >
+        name,
+      </if>
+      <if test="transitionId != null" >
+        transition_id,
+      </if>
+      <if test="conditionRuleId != null" >
+        condition_rule_id,
+      </if>
+      <if test="logicType != null" >
+        logic_type,
+      </if>
+      <if test="nopassNotice != null" >
+        nopass_notice,
+      </if>
+      <if test="groupNum != null" >
+        group_num,
+      </if>
+      <if test="enable != null" >
+        enable,
+      </if>
+      <if test="msg != null" >
+        msg,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="name != null" >
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="transitionId != null" >
+        #{transitionId,jdbcType=INTEGER},
+      </if>
+      <if test="conditionRuleId != null" >
+        #{conditionRuleId,jdbcType=INTEGER},
+      </if>
+      <if test="logicType != null" >
+        #{logicType,jdbcType=INTEGER},
+      </if>
+      <if test="nopassNotice != null" >
+        #{nopassNotice,jdbcType=TINYINT},
+      </if>
+      <if test="groupNum != null" >
+        #{groupNum,jdbcType=INTEGER},
+      </if>
+      <if test="enable != null" >
+        #{enable,jdbcType=INTEGER},
+      </if>
+      <if test="msg != null" >
+        #{msg,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.cooler.ai.platform.entity.ConditionLogic" >
+    update condition_logic
+    <set >
+      <if test="name != null" >
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="transitionId != null" >
+        transition_id = #{transitionId,jdbcType=INTEGER},
+      </if>
+      <if test="conditionRuleId != null" >
+        condition_rule_id = #{conditionRuleId,jdbcType=INTEGER},
+      </if>
+      <if test="logicType != null" >
+        logic_type = #{logicType,jdbcType=INTEGER},
+      </if>
+      <if test="nopassNotice != null" >
+        nopass_notice = #{nopassNotice,jdbcType=TINYINT},
+      </if>
+      <if test="groupNum != null" >
+        group_num = #{groupNum,jdbcType=INTEGER},
+      </if>
+      <if test="enable != null" >
+        enable = #{enable,jdbcType=INTEGER},
+      </if>
+      <if test="msg != null" >
+        msg = #{msg,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.cooler.ai.platform.entity.ConditionLogic" >
+    update condition_logic
+    set name = #{name,jdbcType=VARCHAR},
+      transition_id = #{transitionId,jdbcType=INTEGER},
+      condition_rule_id = #{conditionRuleId,jdbcType=INTEGER},
+      logic_type = #{logicType,jdbcType=INTEGER},
+      nopass_notice = #{nopassNotice,jdbcType=TINYINT},
+      group_num = #{groupNum,jdbcType=INTEGER},
+      enable = #{enable,jdbcType=INTEGER},
+      msg = #{msg,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <!-- 业务相关 -->
+  <select id="selectByTransitionIds" resultMap="BaseResultMap" >
+    select
+    <include refid="Base_Column_List" />
+    from condition_logic
+    where transition_id IN
+    <foreach collection="transitionIds" item="transitionId" open="(" separator="," close=")">
+      #{transitionId,jdbcType=INTEGER}
+    </foreach>
+    and enable = 1
+  </select>
+
+</mapper>

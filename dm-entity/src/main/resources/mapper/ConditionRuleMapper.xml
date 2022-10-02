@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cooler.ai.platform.dao.ConditionRuleMapper" >
+  <resultMap id="BaseResultMap" type="com.cooler.ai.platform.entity.ConditionRule" >
+    <constructor >
+      <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="condition_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="param_type" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="param_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="task_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="rule_type" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="belief_threshold" jdbcType="REAL" javaType="java.lang.Float" />
+      <arg column="check_value" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="check_relation_type" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="check_function_code" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="recommend_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="enable" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="msg" jdbcType="VARCHAR" javaType="java.lang.String" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, condition_name, param_type, param_name, task_id, rule_type, belief_threshold, 
+    check_value, check_relation_type, check_function_code, recommend_id, enable, msg
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from condition_rule
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from condition_rule
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.cooler.ai.platform.entity.ConditionRule" >
+    insert into condition_rule (id, condition_name, param_type, 
+      param_name, task_id, rule_type, 
+      belief_threshold, check_value, check_relation_type, 
+      check_function_code, recommend_id, enable, 
+      msg)
+    values (#{id,jdbcType=INTEGER}, #{conditionName,jdbcType=VARCHAR}, #{paramType,jdbcType=INTEGER}, 
+      #{paramName,jdbcType=VARCHAR}, #{taskName,jdbcType=INTEGER}, #{ruleType,jdbcType=INTEGER},
+      #{beliefThreshold,jdbcType=REAL}, #{checkValue,jdbcType=VARCHAR}, #{checkRelationType,jdbcType=INTEGER}, 
+      #{checkFunctionCode,jdbcType=VARCHAR}, #{recommendId,jdbcType=INTEGER}, #{enable,jdbcType=INTEGER}, 
+      #{msg,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.cooler.ai.platform.entity.ConditionRule" >
+    insert into condition_rule
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="conditionName != null" >
+        condition_name,
+      </if>
+      <if test="paramType != null" >
+        param_type,
+      </if>
+      <if test="paramName != null" >
+        param_name,
+      </if>
+      <if test="taskName != null" >
+        task_id,
+      </if>
+      <if test="ruleType != null" >
+        rule_type,
+      </if>
+      <if test="beliefThreshold != null" >
+        belief_threshold,
+      </if>
+      <if test="checkValue != null" >
+        check_value,
+      </if>
+      <if test="checkRelationType != null" >
+        check_relation_type,
+      </if>
+      <if test="checkFunctionCode != null" >
+        check_function_code,
+      </if>
+      <if test="recommendId != null" >
+        recommend_id,
+      </if>
+      <if test="enable != null" >
+        enable,
+      </if>
+      <if test="msg != null" >
+        msg,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="conditionName != null" >
+        #{conditionName,jdbcType=VARCHAR},
+      </if>
+      <if test="paramType != null" >
+        #{paramType,jdbcType=INTEGER},
+      </if>
+      <if test="paramName != null" >
+        #{paramName,jdbcType=VARCHAR},
+      </if>
+      <if test="taskName != null" >
+        #{taskName,jdbcType=INTEGER},
+      </if>
+      <if test="ruleType != null" >
+        #{ruleType,jdbcType=INTEGER},
+      </if>
+      <if test="beliefThreshold != null" >
+        #{beliefThreshold,jdbcType=REAL},
+      </if>
+      <if test="checkValue != null" >
+        #{checkValue,jdbcType=VARCHAR},
+      </if>
+      <if test="checkRelationType != null" >
+        #{checkRelationType,jdbcType=INTEGER},
+      </if>
+      <if test="checkFunctionCode != null" >
+        #{checkFunctionCode,jdbcType=VARCHAR},
+      </if>
+      <if test="recommendId != null" >
+        #{recommendId,jdbcType=INTEGER},
+      </if>
+      <if test="enable != null" >
+        #{enable,jdbcType=INTEGER},
+      </if>
+      <if test="msg != null" >
+        #{msg,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.cooler.ai.platform.entity.ConditionRule" >
+    update condition_rule
+    <set >
+      <if test="conditionName != null" >
+        condition_name = #{conditionName,jdbcType=VARCHAR},
+      </if>
+      <if test="paramType != null" >
+        param_type = #{paramType,jdbcType=INTEGER},
+      </if>
+      <if test="paramName != null" >
+        param_name = #{paramName,jdbcType=VARCHAR},
+      </if>
+      <if test="taskName != null" >
+        task_id = #{taskName,jdbcType=INTEGER},
+      </if>
+      <if test="ruleType != null" >
+        rule_type = #{ruleType,jdbcType=INTEGER},
+      </if>
+      <if test="beliefThreshold != null" >
+        belief_threshold = #{beliefThreshold,jdbcType=REAL},
+      </if>
+      <if test="checkValue != null" >
+        check_value = #{checkValue,jdbcType=VARCHAR},
+      </if>
+      <if test="checkRelationType != null" >
+        check_relation_type = #{checkRelationType,jdbcType=INTEGER},
+      </if>
+      <if test="checkFunctionCode != null" >
+        check_function_code = #{checkFunctionCode,jdbcType=VARCHAR},
+      </if>
+      <if test="recommendId != null" >
+        recommend_id = #{recommendId,jdbcType=INTEGER},
+      </if>
+      <if test="enable != null" >
+        enable = #{enable,jdbcType=INTEGER},
+      </if>
+      <if test="msg != null" >
+        msg = #{msg,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.cooler.ai.platform.entity.ConditionRule" >
+    update condition_rule
+    set condition_name = #{conditionName,jdbcType=VARCHAR},
+      param_type = #{paramType,jdbcType=INTEGER},
+      param_name = #{paramName,jdbcType=VARCHAR},
+      task_id = #{taskName,jdbcType=INTEGER},
+      rule_type = #{ruleType,jdbcType=INTEGER},
+      belief_threshold = #{beliefThreshold,jdbcType=REAL},
+      check_value = #{checkValue,jdbcType=VARCHAR},
+      check_relation_type = #{checkRelationType,jdbcType=INTEGER},
+      check_function_code = #{checkFunctionCode,jdbcType=VARCHAR},
+      recommend_id = #{recommendId,jdbcType=INTEGER},
+      enable = #{enable,jdbcType=INTEGER},
+      msg = #{msg,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+
+  <!-- 业务相关 -->
+  <select id="selectByConditionRuleIds" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from condition_rule
+    where id IN
+    <foreach collection="conditionRuleIds" item="conditionRuleId" open="(" separator="," close=")">
+      #{conditionRuleId,jdbcType=INTEGER}
+    </foreach>
+    AND enable = 1
+  </select>
+
+
+  <select id="selectByTaskId" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from condition_rule
+    where task_id = #{taskName,jdbcType=INTEGER}
+    and enable = 1
+  </select>
+
+
+</mapper>
