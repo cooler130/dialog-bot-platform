@@ -40,7 +40,7 @@ public class NluMockData {
 //            put("支付",       createDomainInfo("支付", "no_domain", "pay", 1.0, null, null));
 //            put("继续购物",    createDomainInfo("继续购物", "no_domain", "continue_ordering", 1.0, null, null));
 //            put("哈哈",       createDomainInfo("哈哈", "no_domain", "no_intent", 1.0, null, null));
-
+//
 
 
             //callout

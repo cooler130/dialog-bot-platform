@@ -7,7 +7,7 @@ import com.cooler.ai.platform.facade.constance.Constant;
 import com.cooler.ai.platform.facade.constance.PC;
 import com.cooler.ai.platform.facade.model.Message;
 import com.cooler.ai.platform.model.BuDataInfo;
-import com.cooler.ai.platform.model.Order2DataInfo;
+import com.cooler.ai.platform.model.OrderDataInfo;
 import com.cooler.ai.platform.model.TQDataInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,9 +39,9 @@ public class AnswerTaskAction extends BaseInteractiveTaskAction {
 
         String topOrderDataInfoName = null;
         String orderDataInfoJS = getBizDataValue(BC.ORDER_DATA);
-        List<Order2DataInfo> orderDataInfos = JSON.parseArray(orderDataInfoJS, Order2DataInfo.class);
+        List<OrderDataInfo> orderDataInfos = JSON.parseArray(orderDataInfoJS, OrderDataInfo.class);
         if(orderDataInfos != null && orderDataInfos.size() > 0){
-            Order2DataInfo topOrderDataInfo = orderDataInfos.get(0);
+            OrderDataInfo topOrderDataInfo = orderDataInfos.get(0);
             topOrderDataInfoName = topOrderDataInfo.getOrder();
         }
 

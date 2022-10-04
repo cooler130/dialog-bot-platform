@@ -2,7 +2,7 @@ package com.cooler.ai.dm.external;
 
 import com.cooler.ai.platform.facade.BuRouterDataFacade;
 import com.cooler.ai.platform.model.BuDataInfo;
-import com.cooler.ai.platform.model.Order2DataInfo;
+import com.cooler.ai.platform.model.OrderDataInfo;
 import com.cooler.ai.platform.model.TQDataInfo;
 import org.springframework.stereotype.Component;
 
@@ -17,8 +17,8 @@ public class DataServiceUtil {
     @Resource
     private BuRouterDataFacade buRouterDataFacade;
 
-    public List<BuDataInfo> getBuDataInfos(String originalSentence, TQDataInfo fixedTqDataInfo, Order2DataInfo fixedOrder2DataInfo, List<BuDataInfo> askedBuDataInfos){
-        List<BuDataInfo> buDataList = buRouterDataFacade.getBuDatas(originalSentence, fixedTqDataInfo, fixedOrder2DataInfo, askedBuDataInfos);
+    public List<BuDataInfo> getBuDataInfos(String originalSentence, TQDataInfo fixedTqDataInfo, OrderDataInfo fixedOrderDataInfo, List<BuDataInfo> askedBuDataInfos){
+        List<BuDataInfo> buDataList = buRouterDataFacade.getBuDatas(originalSentence, fixedTqDataInfo, fixedOrderDataInfo, askedBuDataInfos);
         Collections.sort(buDataList, new Comparator<BuDataInfo>() {
             @Override
             public int compare(BuDataInfo o1, BuDataInfo o2) {

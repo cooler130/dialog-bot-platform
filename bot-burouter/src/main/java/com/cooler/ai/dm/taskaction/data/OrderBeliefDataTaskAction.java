@@ -7,7 +7,7 @@ import com.cooler.ai.platform.facade.BuRouterDataFacade;
 import com.cooler.ai.platform.facade.constance.CC;
 import com.cooler.ai.platform.facade.constance.Constant;
 import com.cooler.ai.platform.facade.constance.PC;
-import com.cooler.ai.platform.model.Order2DataInfo;
+import com.cooler.ai.platform.model.OrderDataInfo;
 import com.cooler.ai.platform.model.TQDataInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +38,7 @@ public class OrderBeliefDataTaskAction extends BaseDataTaskAction {
         switch (intentName) {
             case "positive":{
                 String orderDataStr = getBizDataValueOrDefault(BC.ORDER_DATA, "");
-                List<Order2DataInfo> orderDataInfos = JSON.parseArray(orderDataStr, Order2DataInfo.class);
+                List<OrderDataInfo> orderDataInfos = JSON.parseArray(orderDataStr, OrderDataInfo.class);
                 if(orderDataInfos != null && orderDataInfos.size() > 0){
                     orderDataInfos.get(0).setBelief(1.0f);
                     addToPreconditionDataMap(BC.ORDER_DATA, JSON.toJSONString(orderDataInfos));
@@ -48,7 +48,7 @@ public class OrderBeliefDataTaskAction extends BaseDataTaskAction {
             }
             case "negative":{
                 String orderDataStr = getBizDataValueOrDefault(BC.ORDER_DATA, "");
-                List<Order2DataInfo> orderDataInfos = JSON.parseArray(orderDataStr, Order2DataInfo.class);
+                List<OrderDataInfo> orderDataInfos = JSON.parseArray(orderDataStr, OrderDataInfo.class);
                 if(orderDataInfos != null && orderDataInfos.size() > 0){
                     orderDataInfos.remove(0);
                     addToPreconditionDataMap(BC.ORDER_DATA, JSON.toJSONString(orderDataInfos));
@@ -62,17 +62,17 @@ public class OrderBeliefDataTaskAction extends BaseDataTaskAction {
                 String fixedTqDataInfoStr = getBizDataValue(BC.FIXED_TQ_DATA);
                 TQDataInfo fixedTqDataInfo = JSON.parseObject(fixedTqDataInfoStr, TQDataInfo.class);        //可能fixedTqDataInfoStr为空
 
-                List<Order2DataInfo> orderDataList = buRouterDataFacade.getOrderDatas(userId, sentence, fixedTqDataInfo);
-                Collections.sort(orderDataList, new Comparator<Order2DataInfo>() {
+                List<OrderDataInfo> orderDataList = buRouterDataFacade.getOrderDatas(userId, sentence, fixedTqDataInfo);
+                Collections.sort(orderDataList, new Comparator<OrderDataInfo>() {
                     @Override
-                    public int compare(Order2DataInfo o1, Order2DataInfo o2) {
+                    public int compare(OrderDataInfo o1, OrderDataInfo o2) {
                         if(o1.getBelief() > o2.getBelief()) return -1;
                         else if(o1.getBelief() == o2.getBelief()) return 0;
                         else return 1;
                     }
                 });
 
-                List<Order2DataInfo> orderDataInfos = new ArrayList<>();
+                List<OrderDataInfo> orderDataInfos = new ArrayList<>();
                 if(orderDataList != null){
                     if(orderDataList.size() > 0){
                         orderDataInfos.add(orderDataList.get(0));

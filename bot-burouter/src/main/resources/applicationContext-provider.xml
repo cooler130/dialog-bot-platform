@@ -20,7 +20,7 @@
         <!--<dubbo:parameter key="qos.port" value="33333" />-->
     <!--</dubbo:application>-->
 
-    <dubbo:registry address="${zookeeper_address}"/>
+    <!--<dubbo:registry address="${zookeeper_address}"/>-->
     <!--<dubbo:registry address="zookeeper://192.168.10.20:2181?backup=192.168.10.21:2181,192.168.10.22:2181"/>-->
 
     <!-- 此处group是分组名称，也是botName，靠此group进行区分各个bot，因为发布的服务都是一个类，且ref='dmFacade' -->

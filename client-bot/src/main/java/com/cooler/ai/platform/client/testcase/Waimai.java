@@ -122,11 +122,11 @@ public class Waimai {
 
     public static Map<String, String[]> querysGroup = new HashMap<String, String[]>() {{
         put("点外卖", querys1);
-//        put("直接搜索", querys2);                                               //todo：这个有待优化，里面说了排序之后应该从头开始查询，页码回复到第一页
-//        put("操作购物车", querys3);
-//        put("去下单", querys4);
-//        put("跳出上下文", querys5);                                                                      //跳出上下文还是不支持啊，
-//        put("支付", querys6);
+        put("直接搜索", querys2);                                               //todo：这个有待优化，里面说了排序之后应该从头开始查询，页码回复到第一页
+        put("操作购物车", querys3);
+        put("去下单", querys4);
+        put("跳出上下文", querys5);                                                                      //跳出上下文还是不支持啊，
+        put("支付", querys6);
 //        put("再来一单", querys7);                           //todo：重新开始，很可能触发，还没有处理好
 //        put("选订单支付", querys8);
     }};

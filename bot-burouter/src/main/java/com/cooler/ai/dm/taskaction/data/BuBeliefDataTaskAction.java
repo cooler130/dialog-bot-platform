@@ -9,7 +9,7 @@ import com.cooler.ai.platform.entity.Transition;
 import com.cooler.ai.platform.facade.constance.Constant;
 import com.cooler.ai.platform.facade.constance.PC;
 import com.cooler.ai.platform.model.BuDataInfo;
-import com.cooler.ai.platform.model.Order2DataInfo;
+import com.cooler.ai.platform.model.OrderDataInfo;
 import com.cooler.ai.platform.model.TQDataInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +44,7 @@ public class BuBeliefDataTaskAction extends BaseDataTaskAction {
         TQDataInfo fixedTqDataInfo = JSON.parseObject(fixTqDataJS, TQDataInfo.class);
 
         String fixOrderDataJS = getPCParamValueOrDefault(BC.FIXED_ORDER_DATA, "");
-        Order2DataInfo fixedOrderDataInfo = JSON.parseObject(fixOrderDataJS, Order2DataInfo.class);
+        OrderDataInfo fixedOrderDataInfo = JSON.parseObject(fixOrderDataJS, OrderDataInfo.class);
 
         switch (intentName) {
             case "positive":{                                                   //这里的肯定是肯定的当前最大分值的，一般只有一个业务时用户会说肯定

@@ -10,7 +10,7 @@ import com.cooler.ai.platform.facade.constance.PC;
 import com.cooler.ai.platform.facade.model.BizDataModelState;
 import com.cooler.ai.platform.model.BuDataInfo;
 import com.cooler.ai.platform.model.TQDataInfo;
-import com.cooler.ai.platform.model.Order2DataInfo;
+import com.cooler.ai.platform.model.OrderDataInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -148,7 +148,7 @@ public class OperateTaskAction extends BaseProcessedTaskAction {
         String fixedOrderDataJS = getBizDataValue(BC.FIXED_ORDER_DATA);
         if(isEmpty(fixedOrderDataJS)){
             String orderDataInfosJS = getBizDataValue(BC.ORDER_DATA);
-            List<Order2DataInfo> orderDataInfos = JSON.parseArray(orderDataInfosJS, Order2DataInfo.class);
+            List<OrderDataInfo> orderDataInfos = JSON.parseArray(orderDataInfosJS, OrderDataInfo.class);
             if(orderDataInfos != null && orderDataInfos.size() > 0 && orderDataInfos.get(0).getBelief() > 0.9f){
                 addToBizDataMSMapIfNotNull(bizDataMapTmp, BC.FIXED_ORDER_DATA, JSON.toJSONString(orderDataInfos.get(0)), Constant.FOREVER);
             }

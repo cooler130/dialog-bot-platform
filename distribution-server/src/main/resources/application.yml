@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: distribution-server
+  profiles:
+    active: dev1
+
+
+
+
