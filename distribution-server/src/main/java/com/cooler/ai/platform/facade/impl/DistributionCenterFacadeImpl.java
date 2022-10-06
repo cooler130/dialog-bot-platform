@@ -45,16 +45,16 @@ public class DistributionCenterFacadeImpl implements DistributionCenterFacade {
         Map<String, BizDataModelState<String>> bizDataMSMap = contextService.getBizData(dmRequest);                     //（全量业务数据集）此bizDataMap用来装载动作执行过程中产生的业务数据，此数据形式多变，无法标准化，也无法确定每一轮能产生多少
 
         DialogState dialogState = null;
-        String debugModel = dmRequest.getDebugModel();
-        debugModel = (debugModel == null ? Constant.MODEL_RDB : debugModel);                                            //默认为KV模式（调试模式）
+        String dmType = dmRequest.getDmType();
+        dmType = (dmType == null ? Constant.MODEL_RDB : dmType);
 
-        if (debugModel.equals(Constant.MODEL_KVDB)) {                                                                   //KV模式状态，后端接入的是json文件内部数据（用于正式环境）
+        if (dmType.equals(Constant.MODEL_KVDB)) {                                                                   //KV模式状态，后端接入的是json文件内部数据（用于正式环境）
             dialogState = slotOperateService.operationSlots(dmRequest, historyDialogStates, bizDataMSMap);              //2.对话填槽补槽，多个（领域，意图）对中决策出一个，槽位值操作（确定领域和意图，对槽位值的增删改操作，构建DS）
-        } else if (debugModel.equals(Constant.MODEL_RDB)) {                                                            //RDB模式状态，通常用于调试，后端接入的是数据库中的数据（用于线下测试环境和管理环境）
+        } else if (dmType.equals(Constant.MODEL_RDB)) {                                                            //RDB模式状态，通常用于调试，后端接入的是数据库中的数据（用于线下测试环境和管理环境）
             dialogState = slotOperateService2.operationSlots(dmRequest, historyDialogStates, bizDataMSMap);
-        } else if (debugModel.equals(Constant.MODEL_GDB)) {                                                            //RDB模式状态，通常用于调试，后端接入的是数据库中的数据（用于线下测试环境和管理环境）
+        } else if (dmType.equals(Constant.MODEL_GDB)) {                                                            //RDB模式状态，通常用于调试，后端接入的是数据库中的数据（用于线下测试环境和管理环境）
             //todo
-        } else if (debugModel.equals(Constant.MODEL_TREE)) {                                                            //RDB模式状态，通常用于调试，后端接入的是数据库中的数据（用于线下测试环境和管理环境）
+        } else if (dmType.equals(Constant.MODEL_TREE)) {                                                            //RDB模式状态，通常用于调试，后端接入的是数据库中的数据（用于线下测试环境和管理环境）
             //todo
         } else {
             //todo

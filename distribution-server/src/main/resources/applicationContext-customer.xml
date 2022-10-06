@@ -12,7 +12,7 @@
     <bean id="xmlDMFacadeMapService" class="com.cooler.ai.platform.service.impl.XmlDMFacadeMapServiceImpl">
         <property name="dmFacadeMap">
             <map>
-                <!--<entry key="waimaiBot" value-ref="waimaiDmFacade"/>-->
+                <entry key="waimaiBot" value-ref="waimaiDmFacade"/>
                 <entry key="calloutBot" value-ref="calloutDmFacade"/>
                 <entry key="burouterBot" value-ref="burouterDmFacade"/>
             </map>

@@ -19,14 +19,14 @@ public class Constant {
     public static final int LEVEL_TWO_INTENT = 2;                               //二级 NLU语义解析的普通意图
 
     //--------------------------------------------------------------------------访问类型
-    public static final String QUERYTYPE_SIGNAL = "signal";
-    public static final String QUERYTYPE_ACTION = "action";
-    public static final String QUERYTYPE_TRANSFORM_INTENT = "transform_intent";
+    public static final String QUERYTYPE_SIGNAL = "signal";                     //信号
+    public static final String QUERYTYPE_ACTION = "action";                     //行为（特指点击行为）
+    public static final String QUERYTYPE_TRANSFORM_INTENT = "transform_intent"; //转移意图
 
-    public static final String QUERYTYPE_TEXT = "text";
-    public static final String QUERYTYEP_IMAGE = "image";
-    public static final String QUERYTYPE_MEDIA = "media";
-    public static final String QUERYTYPE_UNSUPPORTED = "unsupported";
+    public static final String QUERYTYPE_TEXT = "text";                         //文本
+    public static final String QUERYTYEP_IMAGE = "image";                       //图片（为了支持表情等富文本）
+    public static final String QUERYTYPE_MEDIA = "media";                       //声音
+    public static final String QUERYTYPE_UNSUPPORTED = "unsupported";           //不支持的类型（无法识别的类型）
 
     public static final Set<String> NON_LANGUAGE_QUERYTYPES = new HashSet(Arrays.asList(QUERYTYPE_SIGNAL, QUERYTYPE_ACTION, QUERYTYPE_TRANSFORM_INTENT));
     public static final Set<String> LANGUAGE_QUERYTYPES = new HashSet(Arrays.asList( QUERYTYPE_TEXT, QUERYTYEP_IMAGE, QUERYTYPE_MEDIA, QUERYTYPE_UNSUPPORTED));

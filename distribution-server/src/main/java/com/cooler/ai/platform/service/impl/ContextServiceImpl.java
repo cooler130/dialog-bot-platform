@@ -44,28 +44,29 @@ public class ContextServiceImpl implements ContextService {
             domainTaskData = new DomainTaskData(sessionId, 0, new HashMap());
         }
 
+        //2.获取"领域-任务"单元下的轮次，组合成获取上下文的key，如果是非语言请求类型，则前端埋点已经埋好了领域、任务名称，如果是语言请求类型，则需要组合出多个key
         List<String> historyKeys = new ArrayList<>();
-        String queryType = dmRequest.getQueryType();
+        String queryType = dmRequest.getRequestType();
         if(Constant.NON_LANGUAGE_QUERYTYPES.contains(queryType)){
-            Map<String, String> metaData = dmRequest.getMetaData();
-            String domainName = metaData.get(PC.DOMAIN_NAME);
-            String taskName = metaData.get(PC.TASK_NAME);
-            Integer domainTaskTurnNum = domainTaskData.getTurnNumMap().get(domainName + "::" + taskName);
-            domainTaskTurnNum = domainTaskTurnNum != null ? domainTaskTurnNum : 0;
-            historyKeys.add(sessionId + "_" + domainName + "::" + taskName + "_" + domainTaskTurnNum + "_" + Constant.DIALOG_STATE);
+            Map<String, String> extendInfo = dmRequest.getExtendInfo();
+            String domainName = extendInfo.get(PC.DOMAIN_NAME);    //能从这里取出domain和task的名称，需要前端预埋好这两个信息到request的extendInfo中
+            String taskName = extendInfo.get(PC.TASK_NAME);
+            int taskTurnNum = domainTaskData.getTaskTurnNum(domainName, taskName);
+            historyKeys.add(sessionId + "_" + domainName + "::" + taskName + "_" + taskTurnNum + "_" + Constant.DIALOG_STATE);
         }else if(Constant.LANGUAGE_QUERYTYPES.contains(queryType)){
-            Map<String, Integer> turnNumMap = domainTaskData.getTurnNumMap();
-            if(turnNumMap.size() > 0){
-                for (String domainTaskKey : turnNumMap.keySet()) {
-                    if(domainTaskKey.contains("::")){
-                        Integer domainTaskTurnNum = turnNumMap.get(domainTaskKey);
-                        historyKeys.add(sessionId + "_" + domainTaskKey + "_" + domainTaskTurnNum + "_" + Constant.DIALOG_STATE);
-                    }
+            Map<String, DomainTaskData.DomainData> domainDataMap = domainTaskData.getDomainDataMap();
+            for (String domainName : domainDataMap.keySet()) {
+                DomainTaskData.DomainData domainData = domainDataMap.get(domainName);
+                Map<String, DomainTaskData.TaskData> taskDataMap = domainData.getTaskDataMap();
+                for (String taskName : taskDataMap.keySet()) {
+                    int taskTurnNum = domainTaskData.getTaskTurnNum(domainName, taskName);
+                    historyKeys.add(sessionId + "_" + domainName + "::" + taskName + "_" + taskTurnNum + "_" + Constant.DIALOG_STATE);
                 }
             }
+
         }
 
-        dmRequest.setDomainTaskData(domainTaskData);                                                                          //设置当前轮的turnNum
+//        dmRequest.setDomainTaskData(domainTaskData);                                                                          //设置当前轮的turnNum
 
         //3.开始查询
         if(historyKeys.size() > 0){

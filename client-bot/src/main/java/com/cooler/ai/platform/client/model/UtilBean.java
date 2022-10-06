@@ -45,7 +45,7 @@ public class UtilBean {
     public static DMRequest createDmRequest(String sessionId, String queryType, String query) {
         DMRequest dmRequest = new DMRequest();
 
-        dmRequest.setDebugModel(Constant.MODEL_RDB);                                          //RDB作为调试模式
+        dmRequest.setDmType(Constant.MODEL_RDB);                                          //RDB作为调试模式
 
         ClientInfo clientInfo = new ClientInfo();
         clientInfo.setChannel("000");
@@ -66,16 +66,16 @@ public class UtilBean {
         dmRequest.setLocationInfo(locationInfo);
 
         dmRequest.setSessionId(sessionId);
-        dmRequest.setMetaData(new HashMap<String, String>());
+        dmRequest.setExtendInfo(new HashMap<>());
 
-        dmRequest.setQueryType(queryType);
+        dmRequest.setRequestType(queryType);
         if(Constant.LANGUAGE_QUERYTYPES.contains(queryType)){
             NLUData nluData = nluParse(query);                              //query形式要为NluMockData中存在的句子
             dmRequest.setNluData(nluData);
         }else if(Constant.NON_LANGUAGE_QUERYTYPES.contains(queryType)){
             query = query.replace(queryType + "->", "");   //query形式为    signal:testcase|no_intent|2|signal:init@slotName1:slotValue1@slotName2:slotValue2
             Map<String, String> metaMap = createMetaMap(query);
-            dmRequest.setMetaData(metaMap);
+            dmRequest.setExtendInfo(metaMap);
         }
         return dmRequest;
     }

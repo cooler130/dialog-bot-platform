@@ -40,17 +40,13 @@ public class DataStoreServiceImpl implements DataStoreService {
         String sessionId = dialogState.getSessionId();
         String domainName = dialogState.getParamValue(PC.DOMAIN_NAME, Constant.PLATFORM_PARAM);
         String taskName = dialogState.getParamValue(PC.TASK_NAME, Constant.PLATFORM_PARAM);
+        Integer domainTaskTurnNum = dialogState.getDomainTaskTurnNum();
 
-        //1.保存更新后的 DOMAIN_TASK_DATA
-        DomainTaskData domainTaskData = dmRequest.getDomainTaskData();
-        cacheServiceTN.setContext(sessionId + "_" + Constant.DOMAIN_TASK_DATA, domainTaskData);                         //保存此sessionId下当前轮次
-
-        //2.保存本轮的 DIALOG_STATE
-        Integer domainTaskTurnNum = domainTaskData.getTurnNumMap().get(domainName + "::" + taskName);
+        //1.保存本轮产生的 DS
         String dialogStateKey = sessionId + "_" + domainName + "::" + taskName + "_" + domainTaskTurnNum + "_" + Constant.DIALOG_STATE;
         cacheService.setContext(dialogStateKey, dialogState);                                                           //dialogState数据（包含本轮整合后的槽位KV数据）
 
-        //3.保存本轮产生的 BIZ_DATA
+        //2.保存本轮产生的 BIZ_DATA
         Map<String, ModelState<String>> bizDataModelStateMap = new HashMap<>();
         for (String bizKey : bizDataMap.keySet()) {
             BizDataModelState<String> bizDataMS = bizDataMap.get(bizKey);

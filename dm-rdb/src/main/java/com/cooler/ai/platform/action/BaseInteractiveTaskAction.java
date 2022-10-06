@@ -24,7 +24,7 @@ public class BaseInteractiveTaskAction extends BaseTaskAction implements Interac
         List<Message> messages = createMessages();
         String dialogActName = defineDialogAct();
         Map<String, String> extMap = createExtMap();
-        DMResponse dmResponse = createDMResponse(1, null, botName, dmRequest.getSessionId(), dmRequest.getDomainTaskData().getTotalTurnNum(), messages, dialogActName, extMap);
+        DMResponse dmResponse = createDMResponse(1, null, botName, dmRequest.getSessionId(), dialogState.getTotalTurnNum(), messages, dialogActName, extMap);
         return dmResponse;
     }
 
@@ -108,7 +108,7 @@ public class BaseInteractiveTaskAction extends BaseTaskAction implements Interac
         for (String bizItemName : bizDataMSMap.keySet()) {
             BizDataModelState<String> dataModelState = bizDataMSMap.get(bizItemName);
             int turnNum = dataModelState.getTurnNum();
-            if(turnNum == dmRequest.getDomainTaskData().getTotalTurnNum()){
+            if(turnNum == dialogState.getTotalTurnNum()){
                 String bizItemValue = dataModelState.getT();
                 bizValueMap.put(bizItemName, bizItemValue);
             }

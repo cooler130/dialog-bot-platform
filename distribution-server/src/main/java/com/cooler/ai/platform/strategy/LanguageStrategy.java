@@ -17,19 +17,18 @@ import java.util.*;
 @Component("languageStrategy")
 public class LanguageStrategy {
     private Logger logger = LoggerFactory.getLogger(LanguageStrategy.class);
-    private final Byte INHERITABLE = 1;
-    private final Byte INHERIT_DESTRUCTIBLE = 1;
+    private final Byte INHERITABLE = 1;                 //可继承的
+    private final Byte INHERIT_DESTRUCTIBLE = 1;        //继承破坏的
 
-    public DomainData decide(DMRequest dmRequest, List<DialogState> historyDialogStates, Map<String, String> domainDecisionMap,
-                             NLUIntentService nluIntentService, NLUSlotService nluSlotService,
-                             IntentService intentService, SlotService slotService,
-                             SlotRelationService slotRelationService) {
+    public DomainDesionData decide(DMRequest dmRequest, List<DialogState> historyDialogStates, DomainTaskData domainTaskData,
+                                   NLUIntentService nluIntentService, NLUSlotService nluSlotService, IntentService intentService, SlotService slotService, SlotRelationService slotRelationService,
+                                   Map<String, String> domainDecisionMap) {
 
-        List<DomainData> domainDatas = operate(dmRequest, historyDialogStates, Constant.MAX_BACKUP_TURN_COUNT, domainDecisionMap,
-                nluIntentService, nluSlotService, intentService, slotService, slotRelationService);
-        if (domainDatas != null && domainDatas.size() > 0) {
-            DomainData domainData = domainDatas.get(0);                                                                 //经过对DomainIndicator排序，已经将最佳DomainData放到了第一个
-            return domainData;
+        List<DomainDesionData> domainDesionDatas = operate(dmRequest, historyDialogStates, domainTaskData.getTotalTurnNum(), Constant.MAX_BACKUP_TURN_COUNT,
+                nluIntentService, nluSlotService, intentService, slotService, slotRelationService, domainDecisionMap);
+        if (domainDesionDatas != null && domainDesionDatas.size() > 0) {
+            DomainDesionData domainDesionData = domainDesionDatas.get(0);                                     //经过对DomainIndicator排序，已经将最佳DomainData放到了第一个
+            return domainDesionData;
         } else {
             logger.error("2.1.g-4.系统错误，没有选择出最佳业务结构体。");                                                  //todo:!!!!!!!!!!!!!!!!这里可以加入分支，如果选择出的几个领域和意图的分数没有达到阈值，则进行澄清，如果根本没有选择出领域意图（连备选的都没有）则兜底
         }
@@ -43,6 +42,7 @@ public class LanguageStrategy {
      * 通过槽位填充和计算，选择出NLU事件渠道合适的业务数据（m*n版）
      * @param dmRequest                 原始请求
      * @param historyDialogStates       历史DS集合
+     * @param totalTurnNum              当前sessionId的总轮次
      * @param acceptDataCount           （接受的数据量）记忆轮次数量
      * @param decisionProcessMap        决策过程数据
      * @param nluIntentService          nluIntent数据服务
@@ -52,17 +52,17 @@ public class LanguageStrategy {
      * @param slotRelationService       slotRelation数据服务
      * @return  这里返回的是多个最终结果，而上面operationSlots方法中只用了第0个（最佳的）。
      */
-    private List<DomainData> operate(DMRequest dmRequest, List<DialogState> historyDialogStates, int acceptDataCount, Map<String, String> decisionProcessMap,
-                                     NLUIntentService nluIntentService, NLUSlotService nluSlotService, IntentService intentService, SlotService slotService, SlotRelationService slotRelationService) {
+    private List<DomainDesionData> operate(DMRequest dmRequest, List<DialogState> historyDialogStates, int totalTurnNum, int acceptDataCount,
+                                           NLUIntentService nluIntentService, NLUSlotService nluSlotService, IntentService intentService, SlotService slotService, SlotRelationService slotRelationService,
+                                           Map<String, String> decisionProcessMap) {
         String sessionId = dmRequest.getSessionId();
-        int turnNum = dmRequest.getDomainTaskData().getTotalTurnNum();
-        String currentSlotVersion = sessionId + "_" + turnNum;
+        String currentSlotVersion = sessionId + "_" + totalTurnNum;                 //这个作为各个抽出的槽位的版本号
 
         //2.1.NLU有数据的情况
         NLUData nluData = dmRequest.getNluData();
         if (nluData != null && nluData.getResult() != null && nluData.getResult().size() > 0) {
             List<DomainIndicator> domainIndicators = new ArrayList<>();                                                 //领域指标数据（装载领域意图决策的特征数据）
-            Map<String, DomainData> domainDatasMap = new HashMap<>();                                                   //领域业务数据（装载领域意图内部的业务数据）
+            Map<String, DomainDesionData> domainDesionDatasMap = new HashMap<>();                                       //领域业务数据（装载领域意图内部的业务数据）
 
             List<DomainInfo> domainInfos = nluData.getResult();                                                         //NLU中解析出的多个领域的数据（后续根据此集合来准备下面的领域指标数据和领域业务数据）
             for (int i = 0; i < domainInfos.size(); i++) {                                                              //遍历各个领域对象，进行比较，选择最优领域
@@ -83,10 +83,10 @@ public class LanguageStrategy {
                 Set<String> currentNluSlotNames = currentNluSlotInfoListMap.keySet();                                   //本轮产生的聚合后的NLU槽位名称集合
 
                 DialogState lastDialogState = null;
-                String lastNluDomain = null;                                                                                    //上轮选择的NLU领域
-                String lastDmDomain = null;                                                                                     //上轮选择的DM领域
-                if (historyDialogStates != null && historyDialogStates.size() > 0) {                                            //准备好上轮NLU领域和DM领域
-                    lastDialogState = historyDialogStates.get(0);                                                                   //上一轮的dialogState
+                String lastNluDomain = null;                                                                            //上轮选择的NLU领域
+                String lastDmDomain = null;                                                                             //上轮选择的DM领域
+                if (historyDialogStates != null && historyDialogStates.size() > 0) {                                    //准备好上轮NLU领域和DM领域
+                    lastDialogState = historyDialogStates.get(0);                                                       //上一轮的dialogState
                     lastNluDomain = lastDialogState.getParamValue(PC.NLU_DOMAIN, Constant.PLATFORM_PARAM);
                     lastDmDomain = lastDialogState.getParamValue(PC.DOMAIN_NAME, Constant.PLATFORM_PARAM);
                 }
@@ -315,7 +315,7 @@ public class LanguageStrategy {
                             String historyToStateIdStr = historyDialogState.getParamValue(PC.TO_STATE_ID, Constant.PLATFORM_PARAM);
                             historyToStateId = Integer.parseInt(historyToStateIdStr);
 
-                            //2.1.f1-a.完成3件事：    1.当前领域上下文无关时，领域的重新设置    2.判断本轮对话是否继承上轮对话的槽位     3.判断本轮和上轮对话是否同领域
+                            //2.1.f1-a.完成3件事：    1.当前领域上下文无关时，领域的重新设置    2.判断本轮对话是否该继承上轮对话的槽位     3.判断本轮和上轮对话是否同领域
                             boolean shouldExtendLastSlots = false;                                                      //判断上轮领域和本轮领域是否相同，并且在没切换领域的情况下，判断是否继续继承槽位
                             Set<String> extendableSlots = null;                                                         //当前可以继承的槽位
 
@@ -392,7 +392,7 @@ public class LanguageStrategy {
 
                         //2.1.h.收集上面整理好的各种数据，包装成评判数据体和业务数据体
                         domainIndicators.add(new DomainIndicator("DO:" + i + "_DS:" + j, lastNluDomain, lastDmDomain, nluDomainName, nluIntentName, nluDomainScore, valuedNecessarySlotCount, valuedImportantSlotCount, totalImportanceDegree, totalValuedSlotCount, historyTurnNum));
-                        domainDatasMap.put("DO:" + i + "_DS:" + j, new DomainData(historySessionId, historyTurnNum, domainInfo.getUtterance(), nluDomainName, nluIntentName, domainName, intentName, intentId, taskName, historyFromStateId, historyToStateId, sameDomainTmp, historySlotStateMap, currentSlotStateMap, exchangedRecordMap, fixedSlotStateMap, unknownSlotStateMapTmp, null));
+                        domainDesionDatasMap.put("DO:" + i + "_DS:" + j, new DomainDesionData(historySessionId, historyTurnNum, domainInfo.getUtterance(), nluDomainName, nluIntentName, domainName, intentName, intentId, taskName, historyFromStateId, historyToStateId, sameDomainTmp, historySlotStateMap, currentSlotStateMap, exchangedRecordMap, fixedSlotStateMap, unknownSlotStateMapTmp, null));
                     }
                 } else {
                     boolean sameDomainTmp = false;
@@ -415,19 +415,19 @@ public class LanguageStrategy {
                     }
 
                     //2.1.h.收集上面整理好的各种数据，包装成评判数据体和业务数据体
-                    domainIndicators.add(new DomainIndicator("DO:" + i + "_DS:" + 0, lastNluDomain, lastDmDomain, nluDomainName, nluIntentName, nluDomainScore, valuedNecessarySlotCount, valuedImportantSlotCount, totalImportanceDegree, totalValuedSlotCount, turnNum));
-                    domainDatasMap.put("DO:" + i + "_DS:" + 0, new DomainData(sessionId, turnNum, domainInfo.getUtterance(), nluDomainName, nluIntentName, domainName, intentName, intentId, taskName, Constant.GLOBAL_START_ID, Constant.GLOBAL_START_ID, sameDomainTmp, historySlotStateMap, currentSlotStateMap, exchangedRecordMap, fixedSlotStateMap, unknownSlotStateMapTmp, null));
+                    domainIndicators.add(new DomainIndicator("DO:" + i + "_DS:" + 0, lastNluDomain, lastDmDomain, nluDomainName, nluIntentName, nluDomainScore, valuedNecessarySlotCount, valuedImportantSlotCount, totalImportanceDegree, totalValuedSlotCount, totalTurnNum));
+                    domainDesionDatasMap.put("DO:" + i + "_DS:" + 0, new DomainDesionData(sessionId, totalTurnNum, domainInfo.getUtterance(), nluDomainName, nluIntentName, domainName, intentName, intentId, taskName, Constant.GLOBAL_START_ID, Constant.GLOBAL_START_ID, sameDomainTmp, historySlotStateMap, currentSlotStateMap, exchangedRecordMap, fixedSlotStateMap, unknownSlotStateMapTmp, null));
                 }
             }
 
             //2.1.h.根据上面准备好的评判指标数据，进行排序选择最佳领域，并取与其对应的业务数据
-            if (domainIndicators.size() > 0 && domainDatasMap.size() > 0) {
+            if (domainIndicators.size() > 0 && domainDesionDatasMap.size() > 0) {
                 Collections.sort(domainIndicators);
                 //保存排序后的NLU解析结果（最后一个领域被选中）
                 logger.debug("2.1.g-1.得到domainIndicators，最后一个最佳 : " + JSON.toJSONString(domainIndicators));
 
                 int dataSize = domainIndicators.size();
-                List<DomainData> lastDomainDatas = new ArrayList<>();
+                List<DomainDesionData> lastDomainDesionData = new ArrayList<>();
                 int finalAcceptDataCount = 0;
                 if (dataSize >= acceptDataCount) {
                     finalAcceptDataCount = acceptDataCount;
@@ -444,21 +444,21 @@ public class LanguageStrategy {
 //                            logger.error("2.1.g-2.*.此领域不可用");
 //                        } else {
                         String domainIndex = domainIndicator.getDomainIndex();
-                        DomainData domainData = domainDatasMap.get(domainIndex);                                       //选择出来的最佳DM的业务数据
-                        lastDomainDatas.add(domainData);
+                        DomainDesionData domainDesionData = domainDesionDatasMap.get(domainIndex);                                       //选择出来的最佳DM的业务数据
+                        lastDomainDesionData.add(domainDesionData);
 //                        }
                     }
                 }
 
-                String domainDatasJS = JSON.toJSONString(domainDatasMap);                                                  //按理说这个时候domainDatas里面的各个元素已经被评估等级了（设置了level）
-                System.out.println("\n得到的DomainDatas为：" + sessionId + "(" + turnNum + ")" + " ---> " + domainDatasJS + "\n");
+                String domainDatasJS = JSON.toJSONString(domainDesionDatasMap);                                                  //按理说这个时候domainDatas里面的各个元素已经被评估等级了（设置了level）
+                System.out.println("\n得到的DomainDatas为：" + sessionId + "(" + totalTurnNum + ")" + " ---> " + domainDatasJS + "\n");
                 decisionProcessMap.put(Constant.DOMAIN_DATAS, domainDatasJS);
 
                 String domainIndicatorsJS = JSON.toJSONString(domainIndicators);
                 System.out.println("\n得到的DomainIndicators为：" + domainIndicatorsJS + "\n");
                 decisionProcessMap.put(Constant.DOMAIN_INDICATORS, domainIndicatorsJS);
 
-                return lastDomainDatas;
+                return lastDomainDesionData;
 
             } else {
                 logger.error("2.1.g-4.警告！此轮NLU给出了解析结果，但此结果在解析对比过程中产生了异常，所以只能走兜底策略!");

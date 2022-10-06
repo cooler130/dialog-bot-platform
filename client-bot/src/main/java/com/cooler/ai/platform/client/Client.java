@@ -20,7 +20,7 @@ public class Client {
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
     private static DistributionCenterFacade distributionCenterFacade;
 
-    private static String selectBot = "burouter";
+    private static String selectBot = "callout";
 
     public static void main(String args[]){
         String initQuery = null;

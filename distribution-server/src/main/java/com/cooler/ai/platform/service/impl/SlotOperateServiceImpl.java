@@ -49,11 +49,19 @@ public class SlotOperateServiceImpl implements SlotOperateService {
     @Autowired
     private IntentService intentService;
 
+    @Autowired
+    private CacheService<DomainTaskData> turnNumCacheService;
+
+
     @Override
     public DialogState operationSlots(DMRequest dmRequest, List<DialogState> historyDialogStates, Map<String, BizDataModelState<String>> bizDataMSMap) {
         //1.准备好各个参数
+        String sessionId = dmRequest.getSessionId();
+        DomainTaskData domainTaskData = turnNumCacheService.getContext(sessionId + "_" + Constant.DOMAIN_TASK_DATA);
+        if(domainTaskData == null) domainTaskData = new DomainTaskData(sessionId, 0, new HashMap<>());
+
         String sentence = null;                                                                                         //原句
-        String queryType = dmRequest.getQueryType();                                                                    //本轮请求类型（语音请求、点击动作请求）
+        String requestType = dmRequest.getRequestType();                                                                //本轮请求类型（语音请求、点击动作请求）
 
         String nluDomainName = null;                                                                                    //NLU领域名
         String nluIntentName = null;                                                                                    //NLU意图名
@@ -70,37 +78,41 @@ public class SlotOperateServiceImpl implements SlotOperateService {
         Boolean finalSameDomain = null;                                                                                 //是否跟上轮相同领域
 
         Map<String, SlotState> targetSlotStateMap = null;                                                               //目标槽位集合（由语言交互提供）
-        Map<String, SlotState> targetUnkonwSlotStateMap = null;                                                         //目标未知槽位集合，就是没有解析到本意图的槽位（由语言交互提供）
-
         Map<String, String> targetParamValueMap = null;                                                                 //目标槽位值集合（由动作交互提供）
 
+        Map<String, SlotState> unkonwSlotStateMap = null;                                                               //目标未知槽位集合，就是没有解析到本意图的槽位（由语言交互提供）
+
         //2.准备好上一轮所用到的 NLU_DOMAIN 和 DM_DOMAIN
-        DomainData domainData = null;
-        Map<String, String> domainDecisionMap = new HashMap<>();
+        DomainDesionData domainDesionData = null;
+        Map<String, String> domainDecisionDataMap = new HashMap<>();
+
         //3.1.通过槽位填充和计算，确定NLU解析后的目标领域和目标意图（先填槽补槽，才能在多个 (领域，意图）对里面决策出一个最佳选择
-        if(Constant.LANGUAGE_QUERYTYPES.contains(queryType)){
-            domainData = languageStrategy.decide(dmRequest, historyDialogStates, domainDecisionMap, nluIntentService, nluSlotService, intentService, slotService, slotRelationService);
+        if(Constant.LANGUAGE_QUERYTYPES.contains(requestType)){
+            domainDesionData = languageStrategy.decide(dmRequest, historyDialogStates, domainTaskData, nluIntentService, nluSlotService, intentService, slotService, slotRelationService, domainDecisionDataMap);
         }
         //3.2.确定点击事件渠道的目标领域和目标意图（这里的点击事件需要明确domainName、intentId和stateId，后续需要注意传递这些值）
-        else if (Constant.NON_LANGUAGE_QUERYTYPES.contains(queryType)) {
-            domainData = nonLanguageStrategy.decide(dmRequest, historyDialogStates, intentService);
+        else if (Constant.NON_LANGUAGE_QUERYTYPES.contains(requestType)) {
+            domainDesionData = nonLanguageStrategy.decide(dmRequest, historyDialogStates, domainTaskData, intentService);
         } else {
             //todo:抛出传值错误异常
         }
 
-        sentence = domainData.getSentence();
-        nluDomainName = domainData.getNluDomainName();
-        nluIntentName = domainData.getNluIntentName();
-        domainName = domainData.getDomainName();
-        intentName = domainData.getIntentName();
-        targetIntentId = domainData.getIntentId();
-        taskName = domainData.getTaskName();
-        targetLastFromStateId = domainData.getLastFromStateId();
-        targetFromStateId = domainData.getFromStateId();
-        targetSlotStateMap = domainData.getFixedSlotStateMap();
-        targetUnkonwSlotStateMap = domainData.getUnknownSlotStateMap();
-        targetParamValueMap = domainData.getFixedParamValueMap();
-        finalSameDomain = domainData.getSameDomain();
+        sentence = domainDesionData.getSentence();
+
+        nluDomainName = domainDesionData.getNluDomainName();
+        nluIntentName = domainDesionData.getNluIntentName();
+        domainName = domainDesionData.getDomainName();
+        intentName = domainDesionData.getIntentName();
+
+        targetIntentId = domainDesionData.getIntentId();
+        taskName = domainDesionData.getTaskName();
+        targetLastFromStateId = domainDesionData.getLastFromStateId();
+        targetFromStateId = domainDesionData.getFromStateId();
+
+        targetSlotStateMap = domainDesionData.getFixedSlotStateMap();
+        unkonwSlotStateMap = domainDesionData.getUnknownSlotStateMap();
+        targetParamValueMap = domainDesionData.getFixedParamValueMap();
+        finalSameDomain = domainDesionData.getSameDomain();
 
         targetIntent = intentService.selectByIntentId(targetIntentId);
 
@@ -123,21 +135,15 @@ public class SlotOperateServiceImpl implements SlotOperateService {
         String botName = domainName + "Bot";
         dialogState.setBotName(botName);
 
-        DomainTaskData domainTaskData = dmRequest.getDomainTaskData();
-        domainTaskData.increaseTurnNum(domainName, taskName);                                            //明确了nluDomainName和taskId后，就要针对各个turnNum加一
+        domainTaskData.increaseTurnNum(domainName, taskName);                //明确了domainName和taskName后，就要针对各个turnNum加一
+        turnNumCacheService.setContext(sessionId + "_" + Constant.DOMAIN_TASK_DATA, domainTaskData);        //上面修改后，要保存的，就不要放到最后保存了
+        dialogState.setTotalTurnNum(domainTaskData.getTotalTurnNum());
+        dialogState.setDomainTurnNum(domainTaskData.getDomainTurnNum(domainName));
+        dialogState.setDomainTaskTurnNum(domainTaskData.getTaskTurnNum(domainName, taskName));
 
-        int totalTurnNum = domainTaskData.getTotalTurnNum();
-        Map<String, Integer> turnNumMap = domainTaskData.getTurnNumMap();
-        Integer domainTurnNum = turnNumMap.get(domainName);
-        Integer domainTaskTurnNum = turnNumMap.get(domainName + "::" + taskName);
+        dialogState.addToModelStateMap(Constant.SO_DOMAIN_DECISION_MAP, domainDecisionDataMap);
 
-        dialogState.setTotalTurnNum(totalTurnNum);
-        dialogState.setDomainTurnNum(domainTurnNum);
-        dialogState.setDomainTaskTurnNum(domainTaskTurnNum);
-
-        dialogState.addToModelStateMap(Constant.SO_DOMAIN_DECISION_MAP, domainDecisionMap);
-
-        fillParamData(dialogState, dmRequest, sentence, nluDomainName, targetIntent, targetSlotStateMap, targetUnkonwSlotStateMap, targetParamValueMap, finalSameDomain, targetLastFromStateId, targetFromStateId, bizDataMSMap);
+        fillParamData(dialogState, dmRequest, sentence, nluDomainName, targetIntent, targetSlotStateMap, unkonwSlotStateMap, targetParamValueMap, finalSameDomain, targetLastFromStateId, targetFromStateId, bizDataMSMap);
 
         return dialogState;
     }
@@ -205,8 +211,8 @@ public class SlotOperateServiceImpl implements SlotOperateService {
 
         //将DMRequest里面的数据作为定制参数加入到paramValueMap中
         paramValueMap.put("#" + CC.SESSION_ID + "#", dmRequest.getSessionId());
-        paramValueMap.put("#" + CC.TURN_NUM + "#", dmRequest.getDomainTaskData().getTotalTurnNum() + "");
-        paramValueMap.put("#" + CC.QUERY_TYPE + "#", dmRequest.getQueryType());
+        paramValueMap.put("#" + CC.TURN_NUM + "#", dialogState.getTotalTurnNum() + "");         //这个数据前面已经设置到了dialogState里面了
+        paramValueMap.put("#" + CC.QUERY_TYPE + "#", dmRequest.getRequestType());
         ClientInfo clientInfo = dmRequest.getClientInfo();
         if(clientInfo != null){
             paramValueMap.put("#" + CC.CLIENT_ID + "#", clientInfo.getClientId());
@@ -223,10 +229,10 @@ public class SlotOperateServiceImpl implements SlotOperateService {
         if(locationInfo != null){
             paramValueMap.put("#" + CC.CITY_NAME + "#", locationInfo.getCityName());
         }
-        Map<String, String> metaData = dmRequest.getMetaData();
-        if(metaData != null && metaData.size() > 0){
-            for (String key : metaData.keySet()) {
-                paramValueMap.put("#" + key + "#", metaData.get(key));
+        Map<String, String> extendInfo = dmRequest.getExtendInfo();
+        if(extendInfo != null && extendInfo.size() > 0){
+            for (String key : extendInfo.keySet()) {
+                paramValueMap.put("#" + key + "#", extendInfo.get(key));
             }
         }
 

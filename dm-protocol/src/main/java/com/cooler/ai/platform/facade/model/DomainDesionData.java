@@ -7,7 +7,7 @@ import java.util.Map;
 
 @Data
 @AllArgsConstructor
-public class DomainData {
+public class DomainDesionData {
 
     private String sessionId = null;
     private int turnNum = -1;
