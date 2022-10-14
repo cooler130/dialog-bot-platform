@@ -26,6 +26,7 @@
 
     <modules>
         <module>bot-burouter</module>
+        <module>bot-burouter2</module>
         <module>bot-callout</module>
         <module>bot-waimai</module>
 

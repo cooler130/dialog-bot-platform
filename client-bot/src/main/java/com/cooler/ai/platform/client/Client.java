@@ -20,34 +20,44 @@ public class Client {
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
     private static DistributionCenterFacade distributionCenterFacade;
 
-    private static String selectBot = "callout";
+    private static String selectBot = "burouter2";
 
     public static void main(String args[]){
+        String dmType = null;
         String initQuery = null;
         Map<String, String[]> querysGroup = null;
         switch (selectBot){
             case "waimai" : {
+                dmType = Constant.MODEL_RDB;
                 initQuery = "signal->waimai|no_intent|shopping|#signal#:init";
                 querysGroup = Waimai.querysGroup;
                 break;
             }
             case "callout" : {
+                dmType = Constant.MODEL_RDB;
                 initQuery = "signal->callout|no_intent|surveys|#signal#:init";
                 querysGroup = Callout.querysGroup;
                 break;
             }
             case "burouter" : {
+                dmType = Constant.MODEL_RDB;
                 initQuery = "signal->burouter|no_intent|bu_route|#signal#:init";
+                querysGroup = BuRouter.querysGroup;
+                break;
+            }
+            case "burouter2" : {
+                dmType = Constant.MODEL_GDB;
+                initQuery = "signal->burouter2|no_intent|bu_route2|#signal#:init";
                 querysGroup = BuRouter.querysGroup;
                 break;
             }
         }
 
-//        humanTest(args, initQuery);
-        scriptTest(args, initQuery, querysGroup);
+//        humanTest(args, dmType, initQuery);
+        scriptTest(dmType, initQuery, querysGroup);
     }
 
-    public static void humanTest(String args[], String initQuery){
+    public static void humanTest(String args[], String dmType, String initQuery){
         BeanFactory beanFactory = new ClassPathXmlApplicationContext("client.xml");
         distributionCenterFacade = (DistributionCenterFacade) beanFactory.getBean("distributionCenterFacade");
 
@@ -55,7 +65,7 @@ public class Client {
         String signal = "init";
         String sessionId = "SID_TEST_" + System.currentTimeMillis();
         System.out.println("0 ---->驱动信号：" + signal);
-        DMRequest dmRequest = UtilBean.createDmRequest(sessionId, Constant.QUERYTYPE_SIGNAL, initQuery);    //信号init驱动，产生欢迎语
+        DMRequest dmRequest = UtilBean.createDmRequest(sessionId, dmType, Constant.QUERYTYPE_SIGNAL, initQuery);    //信号init驱动，产生欢迎语
         DMResponse dmResponse = distributionCenterFacade.distributeProcess(dmRequest);
         String query = "";
 
@@ -86,7 +96,7 @@ public class Client {
             System.out.print("\n" + i + "---->人 ：" + query);
 
             String queryType = UtilBean.checkQueryType(query);
-            dmRequest = UtilBean.createDmRequest(sessionId, queryType, query);
+            dmRequest = UtilBean.createDmRequest(sessionId, dmType, queryType, query);
 
 
             dmResponse = distributionCenterFacade.distributeProcess(dmRequest);
@@ -96,7 +106,7 @@ public class Client {
 
     }
 
-    public static void scriptTest(String[] args, String initQuery, Map<String, String[]> querysGroup) {
+    public static void scriptTest(String dmType, String initQuery, Map<String, String[]> querysGroup) {
         BeanFactory beanFactory = new ClassPathXmlApplicationContext("client.xml");
         distributionCenterFacade = (DistributionCenterFacade) beanFactory.getBean("distributionCenterFacade");
 
@@ -109,7 +119,7 @@ public class Client {
             sessionId = "SID_TEST_" + System.currentTimeMillis();                                                                //变动的sessionID，使组之间不继承上下文。
 
             //准备一个带有init信号的DmRequest。
-            DMRequest dmRequest = UtilBean.createDmRequest(sessionId, Constant.QUERYTYPE_SIGNAL, initQuery);    //信号驱动，产生欢迎语
+            DMRequest dmRequest = UtilBean.createDmRequest(sessionId, dmType, Constant.QUERYTYPE_SIGNAL, initQuery);    //信号驱动，产生欢迎语
             DMResponse dmResponse = null;
             System.out.println("0 ---->驱动信号：init");
 
@@ -140,7 +150,7 @@ public class Client {
                 System.out.println((turnNum) + " ---->人  ：" + answer);
 
                 String queryType = UtilBean.checkQueryType(answer);
-                dmRequest = UtilBean.createDmRequest(sessionId, queryType, answer);
+                dmRequest = UtilBean.createDmRequest(sessionId, dmType, queryType, answer);
 
                 System.out.println();
             }

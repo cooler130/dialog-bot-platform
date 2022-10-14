@@ -32,6 +32,10 @@ public class DistributionCenterFacadeImpl implements DistributionCenterFacade {
     @Autowired
     private SlotOperateService slotOperateService2;                                                                     //2.2.对话状态追踪服务（两个版本：db版）
 
+    @Qualifier("slotOperateService")
+    @Autowired
+    private SlotOperateService slotOperateService3;                                                                     //2.2.对话状态追踪服务（两个版本：db版）
+
     @Qualifier("xmlDMFacadeMapService")
     @Autowired
     private DMFacadeMapService dmFacadeMapService;                                                                      //3.facade映射服务（当前在xml注册各个服务，以后还可以设计其他版本，例如将映射关系放到数据库中）
@@ -53,7 +57,7 @@ public class DistributionCenterFacadeImpl implements DistributionCenterFacade {
         } else if (dmType.equals(Constant.MODEL_RDB)) {                                                            //RDB模式状态，通常用于调试，后端接入的是数据库中的数据（用于线下测试环境和管理环境）
             dialogState = slotOperateService2.operationSlots(dmRequest, historyDialogStates, bizDataMSMap);
         } else if (dmType.equals(Constant.MODEL_GDB)) {                                                            //RDB模式状态，通常用于调试，后端接入的是数据库中的数据（用于线下测试环境和管理环境）
-            //todo
+            dialogState = slotOperateService3.operationSlots(dmRequest, historyDialogStates, bizDataMSMap);
         } else if (dmType.equals(Constant.MODEL_TREE)) {                                                            //RDB模式状态，通常用于调试，后端接入的是数据库中的数据（用于线下测试环境和管理环境）
             //todo
         } else {

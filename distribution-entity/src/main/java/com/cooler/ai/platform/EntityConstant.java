@@ -20,10 +20,16 @@ public class EntityConstant {
     public static final int NO_TASK_ID = 1;                                         //空任务ID
     public static final String NO_TASK = "no_task";                                    //空任务
 
-    public static final int START_STATE_ID = 1;                                     //开始状态的ID
-    public static final int END_STATE_ID = 2;                                       //结束状态的ID
-    public static final int ERROR_STATE_ID = 3;                                     //系统错误状态ID
-    public static final int ANY_STATE_ID = 4;                                       //任意状态的状态ID
+    public static final int GLOBAL_START_ID = 1;                                     //开始状态的ID
+    public static final int GLOBAL_END_ID = 2;                                       //结束状态的ID
+    public static final int GLOBAL_ERROR_ID = 3;                                     //系统错误状态ID
+    public static final int GLOBAL_ANY_ID = 4;                                       //任意状态的状态ID
+
+    public static final String GLOBAL_START = "global_start";                                     //开始状态
+    public static final String GLOBAL_END = "global_end";                                       //结束状态
+    public static final String GLOBAL_ERROR = "global_error";                                     //系统错误状态
+    public static final String GLOBAL_ANY = "global_any";                                       //任意状态的状态
+
 
     public static final int START_END_TRANSITION_ID = 1;                            //全局的从开始到结束的变迁的ID
 

@@ -9,7 +9,7 @@ import java.util.Map;
 
 @Data
 @AllArgsConstructor
-public class BaseConditionData<V> implements ConditionData<V> {
+public class BaseConditionData<V> {
 
     private ConditionRule conditionRule = null;         //由此conditionRule控制条件检验
 

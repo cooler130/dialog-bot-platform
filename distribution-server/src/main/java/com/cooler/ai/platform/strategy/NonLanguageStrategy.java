@@ -28,16 +28,22 @@ public class NonLanguageStrategy {
 
         DialogState lastDialogState = null;
         String targetLastFromStateIdStr = null;
+        String targetLastFromState = null;
         String targetFromStateIdStr = null;
+        String targetFromState = null;
         if (historyDialogStates != null && historyDialogStates.size() > 0) {
             lastDialogState = historyDialogStates.get(0);
             if(lastDialogState != null){
                 targetLastFromStateIdStr = lastDialogState.getParamValue(PC.FROM_STATE_ID2, Constant.PLATFORM_PARAM);
+                targetLastFromState = lastDialogState.getParamValue(PC.FROM_STATE2, Constant.PLATFORM_PARAM);
                 targetFromStateIdStr = lastDialogState.getParamValue(PC.TO_STATE_ID, Constant.PLATFORM_PARAM);
+                targetFromState = lastDialogState.getParamValue(PC.TO_STATE, Constant.PLATFORM_PARAM);
             }
         }
-        Integer targetLastFromStateId = targetLastFromStateIdStr != null ? Integer.parseInt(targetLastFromStateIdStr) : EntityConstant.START_STATE_ID;
-        Integer targetFromStateId = targetFromStateIdStr != null ? Integer.parseInt(targetFromStateIdStr) : EntityConstant.START_STATE_ID;
+        Integer targetLastFromStateId = targetLastFromStateIdStr != null ? Integer.parseInt(targetLastFromStateIdStr) : EntityConstant.GLOBAL_START_ID;
+        Integer targetFromStateId = targetFromStateIdStr != null ? Integer.parseInt(targetFromStateIdStr) : EntityConstant.GLOBAL_START_ID;
+        targetLastFromState = targetLastFromState != null ? targetLastFromState : EntityConstant.GLOBAL_START;
+        targetFromState = targetFromState != null ? targetFromState : EntityConstant.GLOBAL_START;
 
         Map<String, String> extendInfo = dmRequest.getExtendInfo();
         if (extendInfo == null || extendInfo.size() == 0) {
@@ -52,7 +58,9 @@ public class NonLanguageStrategy {
                     EntityConstant.NO_INTENT_ID,
                     EntityConstant.NO_TASK,
                     targetLastFromStateId,
+                    targetLastFromState,
                     targetFromStateId,
+                    targetFromState,
                     false,
                     null,
                     null,
@@ -89,7 +97,9 @@ public class NonLanguageStrategy {
                             targetIntentId,
                             taskName,
                             targetLastFromStateId,
+                            targetLastFromState,
                             targetFromStateId,
+                            targetFromState,
                             finalSameDomain,
                             null,
                             null,
@@ -114,7 +124,9 @@ public class NonLanguageStrategy {
                     EntityConstant.NO_INTENT_ID,
                     taskName,
                     targetLastFromStateId,
+                    targetLastFromState,
                     targetFromStateId,
+                    targetFromState,
                     false,
                     null,
                     null,

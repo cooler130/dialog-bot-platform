@@ -38,14 +38,15 @@ public class UtilBean {
     /**
      * 创建DmRequest（里面有两种模式）
      * @param sessionId
+     * @param dmType
      * @param queryType
      * @param query
      * @return
      */
-    public static DMRequest createDmRequest(String sessionId, String queryType, String query) {
+    public static DMRequest createDmRequest(String sessionId, String dmType, String queryType, String query) {
         DMRequest dmRequest = new DMRequest();
 
-        dmRequest.setDmType(Constant.MODEL_RDB);                                          //RDB作为调试模式
+        dmRequest.setDmType(dmType);                                          //RDB作为调试模式
 
         ClientInfo clientInfo = new ClientInfo();
         clientInfo.setChannel("000");

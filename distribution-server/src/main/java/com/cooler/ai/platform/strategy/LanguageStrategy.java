@@ -307,13 +307,18 @@ public class LanguageStrategy {
                         boolean sameDomainTmp = false;
                         Map<String, SlotState> fixedSlotStateMap = new HashMap<>();
                         Integer historyFromStateId = Constant.GLOBAL_START_ID;
+                        String historyFromState = Constant.GLOBAL_START;
                         Integer historyToStateId = Constant.GLOBAL_START_ID;
+                        String historyToState = Constant.GLOBAL_START;
 
                         if (historyDialogState != null) {
                             String historyFromStateIdStr = historyDialogState.getParamValue(PC.FROM_STATE_ID, Constant.PLATFORM_PARAM);
                             historyFromStateId = Integer.parseInt(historyFromStateIdStr);
+                            historyFromState = historyDialogState.getParamValue(PC.FROM_STATE, Constant.PLATFORM_PARAM);
+
                             String historyToStateIdStr = historyDialogState.getParamValue(PC.TO_STATE_ID, Constant.PLATFORM_PARAM);
                             historyToStateId = Integer.parseInt(historyToStateIdStr);
+                            historyToState = historyDialogState.getParamValue(PC.TO_STATE, Constant.PLATFORM_PARAM);
 
                             //2.1.f1-a.完成3件事：    1.当前领域上下文无关时，领域的重新设置    2.判断本轮对话是否该继承上轮对话的槽位     3.判断本轮和上轮对话是否同领域
                             boolean shouldExtendLastSlots = false;                                                      //判断上轮领域和本轮领域是否相同，并且在没切换领域的情况下，判断是否继续继承槽位
@@ -392,7 +397,7 @@ public class LanguageStrategy {
 
                         //2.1.h.收集上面整理好的各种数据，包装成评判数据体和业务数据体
                         domainIndicators.add(new DomainIndicator("DO:" + i + "_DS:" + j, lastNluDomain, lastDmDomain, nluDomainName, nluIntentName, nluDomainScore, valuedNecessarySlotCount, valuedImportantSlotCount, totalImportanceDegree, totalValuedSlotCount, historyTurnNum));
-                        domainDesionDatasMap.put("DO:" + i + "_DS:" + j, new DomainDesionData(historySessionId, historyTurnNum, domainInfo.getUtterance(), nluDomainName, nluIntentName, domainName, intentName, intentId, taskName, historyFromStateId, historyToStateId, sameDomainTmp, historySlotStateMap, currentSlotStateMap, exchangedRecordMap, fixedSlotStateMap, unknownSlotStateMapTmp, null));
+                        domainDesionDatasMap.put("DO:" + i + "_DS:" + j, new DomainDesionData(historySessionId, historyTurnNum, domainInfo.getUtterance(), nluDomainName, nluIntentName, domainName, intentName, intentId, taskName, historyFromStateId, historyFromState, historyToStateId, historyToState, sameDomainTmp, historySlotStateMap, currentSlotStateMap, exchangedRecordMap, fixedSlotStateMap, unknownSlotStateMapTmp, null));
                     }
                 } else {
                     boolean sameDomainTmp = false;
@@ -416,7 +421,7 @@ public class LanguageStrategy {
 
                     //2.1.h.收集上面整理好的各种数据，包装成评判数据体和业务数据体
                     domainIndicators.add(new DomainIndicator("DO:" + i + "_DS:" + 0, lastNluDomain, lastDmDomain, nluDomainName, nluIntentName, nluDomainScore, valuedNecessarySlotCount, valuedImportantSlotCount, totalImportanceDegree, totalValuedSlotCount, totalTurnNum));
-                    domainDesionDatasMap.put("DO:" + i + "_DS:" + 0, new DomainDesionData(sessionId, totalTurnNum, domainInfo.getUtterance(), nluDomainName, nluIntentName, domainName, intentName, intentId, taskName, Constant.GLOBAL_START_ID, Constant.GLOBAL_START_ID, sameDomainTmp, historySlotStateMap, currentSlotStateMap, exchangedRecordMap, fixedSlotStateMap, unknownSlotStateMapTmp, null));
+                    domainDesionDatasMap.put("DO:" + i + "_DS:" + 0, new DomainDesionData(sessionId, totalTurnNum, domainInfo.getUtterance(), nluDomainName, nluIntentName, domainName, intentName, intentId, taskName, Constant.GLOBAL_START_ID, Constant.GLOBAL_START, Constant.GLOBAL_START_ID, Constant.GLOBAL_START, sameDomainTmp, historySlotStateMap, currentSlotStateMap, exchangedRecordMap, fixedSlotStateMap, unknownSlotStateMapTmp, null));
                 }
             }
 

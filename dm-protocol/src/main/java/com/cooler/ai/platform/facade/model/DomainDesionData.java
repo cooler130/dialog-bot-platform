@@ -20,7 +20,9 @@ public class DomainDesionData {
     private Integer intentId = null;
     private String taskName = null;
     private Integer lastFromStateId = null;
+    private String lastFromState = null;
     private Integer fromStateId = null;                                                                                 //此轮的fromStateId一开始为lastToStateId，后面可能会变。
+    private String fromState = null;
     private Boolean sameDomain = false;
 
     private Map<String, SlotState> historySlotStateMap = null;                                                          //装载Language分发数据体

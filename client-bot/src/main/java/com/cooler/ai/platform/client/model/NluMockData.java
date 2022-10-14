@@ -67,8 +67,20 @@ public class NluMockData {
 
 
             //burouter
-            put("我的红包怎么用不了啊？",     createDomainInfo("我的红包怎么用不了啊？", "burouter", "express_question", 1.0, null, null));
-            put("我的红包呢？",             createDomainInfo("我的红包呢？",         "burouter", "unknown_intent", 1.0, null, null));
+//            put("我的红包怎么用不了啊？",     createDomainInfo("我的红包怎么用不了啊？", "burouter", "express_question", 1.0, null, null));
+//            put("我的红包呢？",             createDomainInfo("我的红包呢？",         "burouter", "unknown_intent", 1.0, null, null));
+//
+//            put("不是",                    createDomainInfo("不是",                "no_domain", "negative", 1.0, null, null));
+//            put("都不是",                  createDomainInfo("都不是",                "no_domain", "negative", 1.0, null, null));
+//            put("是的",                    createDomainInfo("是的",                "no_domain", "positive", 1.0, null, null));
+//            put("电影",                    createDomainInfo("电影",                "no_domain", "express_business", 1.0, null, null));
+//            put("第二个",                  createDomainInfo("第二个",                "no_domain", "select", 1.0, new String[]{"option_number"}, new String[]{"2"}));
+//            put("转人工",                  createDomainInfo("转人工",                "no_domain", "people_service", 1.0, null, null));
+
+
+            //burouter2
+            put("我的红包怎么用不了啊？",     createDomainInfo("我的红包怎么用不了啊？", "burouter2", "express_question", 1.0, null, null));
+            put("我的红包呢？",             createDomainInfo("我的红包呢？",         "burouter2", "unknown_intent", 1.0, null, null));
 
             put("不是",                    createDomainInfo("不是",                "no_domain", "negative", 1.0, null, null));
             put("都不是",                  createDomainInfo("都不是",                "no_domain", "negative", 1.0, null, null));

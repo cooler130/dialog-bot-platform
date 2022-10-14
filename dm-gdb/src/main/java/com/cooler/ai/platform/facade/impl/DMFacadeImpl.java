@@ -12,7 +12,7 @@ import java.util.Map;
 @Component("dmFacade")
 public class DMFacadeImpl implements DMFacade {
 
-    @Qualifier("dstService")
+    @Qualifier("gdbDstService")
     @Autowired
     private DSTService dstService;                                                                                     //3.有限状态机服务
 

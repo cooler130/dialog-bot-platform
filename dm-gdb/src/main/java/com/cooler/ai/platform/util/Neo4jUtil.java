@@ -1,6 +1,8 @@
 package com.cooler.ai.platform.util;
 
-import com.cooler.ai.platform.model.StateNode;
+import com.cooler.ai.platform.model.ConditionNodeRecord;
+import com.cooler.ai.platform.model.ConditionPathRecord;
+import com.cooler.ai.platform.model.IntentSetNode;
 import org.neo4j.driver.*;
 import org.neo4j.driver.types.Node;
 import org.neo4j.driver.types.Path;
@@ -12,14 +14,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.function.Function;
 
 @Component
 @Lazy(false)
-public class Neo4jUtil<T> {
+public class Neo4jUtil {
 
 	private static Driver neo4jDriver;
 
@@ -32,84 +32,16 @@ public class Neo4jUtil<T> {
 	}
 
 	/**
-	 * 测试neo4j连接是否打开
-	 *
-	 * @return
-	 */
-	public static boolean isNeo4jOpen() {
-		try (Session session = neo4jDriver.session()) {
-			log.debug("连接成功：" + session.isOpen());
-			return session.isOpen();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return false;
-	}
-
-	/**
-	 * neo4j驱动执行cypher
 	 *
 	 * @param cypherSql
 	 * @return
 	 */
-	public static Result executeCypherSql(String cypherSql) {
-		Result result = null;
-		try (Session session = neo4jDriver.session()) {
-			log.debug(cypherSql);
-			result = session.run(cypherSql);
-		}
-		return result;
-	}
-
-	public static void runCypherSql(String cypherSql) {
-		try (Session session = neo4jDriver.session()) {
-			log.debug(cypherSql);
-			session.run(cypherSql);
-		}
-	}
-	/**
-	 * 返回节点集合，此方法不保留关系
-	 *
-	 * @param cypherSql
-	 * @return
-	 */
-	public static List<HashMap<String, Object>> getGraphNode(String cypherSql) {
-		List<HashMap<String, Object>> ents = new ArrayList<HashMap<String, Object>>();
-		try {
-			Result result = executeCypherSql(cypherSql);
-			if (result.hasNext()) {
-				List<Record> records = result.list();
-				for (Record recordItem : records) {
-					List<Pair<String, Value>> f = recordItem.fields();
-					for (Pair<String, Value> pair : f) {
-						HashMap<String, Object> rss = new HashMap<String, Object>();
-						String typeName = pair.value().type().name();
-						if (typeName.equals("NODE")) {
-							Node noe4jNode = pair.value().asNode();
-							String uuid = String.valueOf(noe4jNode.id());
-							Map<String, Object> map = noe4jNode.asMap();
-							for (Entry<String, Object> entry : map.entrySet()) {
-								String key = entry.getKey();
-								rss.put(key, entry.getValue());
-							}
-							rss.put("uuid", uuid);
-							ents.add(rss);
-						}
-					}
-
-				}
-			}
-		} catch (Exception e) {
-			log.error(e.getMessage());
-		}
-		return ents;
-	}
-
-
-	public static List<Map<String, String>> getNodeDataMaps(String cypherSql) {
+	public static List<Map<String, String>> getIntentSetsFromState(String cypherSql) {
 		List<Map<String, String>> ents = new ArrayList<>();
+		Session session = null;
 		try {
-			Result result = executeCypherSql(cypherSql);
+			session = neo4jDriver.session();
+			Result result = session.run(cypherSql);
 			if (result.hasNext()) {
 				List<Record> records = result.list();
 				for (Record recordItem : records) {
@@ -121,7 +53,7 @@ public class Neo4jUtil<T> {
 							Node noe4jNode = pair.value().asNode();
 							String uuid = String.valueOf(noe4jNode.id());
 							Map<String, Object> map = noe4jNode.asMap();
-							for (Entry<String, Object> entry : map.entrySet()) {
+							for (Map.Entry<String, Object> entry : map.entrySet()) {
 								String key = entry.getKey();
 								rss.put(key, entry.getValue().toString());
 							}
@@ -129,502 +61,310 @@ public class Neo4jUtil<T> {
 							ents.add(rss);
 						}
 					}
-
 				}
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage());
+			e.printStackTrace();
+		} finally {
+			session.close();
 		}
 		return ents;
 	}
 
 
 	/**
-	 * 获取一个标准的表格，一般用于语句里使用as
-	 * @param cypherSql
-	 * @return
+	 * 尝试所给IntentSet节点引出的所有条件路径，返回第一个可通过的路径
+	 * @param intentSetNode IntentSet节点
+	 * @return  可通过的路径
 	 */
-	public static List<HashMap<String, Object>> getGraphTable(String cypherSql) {
-		List<HashMap<String, Object>> resultData = new ArrayList<HashMap<String, Object>>();
+	public static ConditionPathRecord tryConditionPathsFromIntent(String currentStateName, String intentName, IntentSetNode intentSetNode) {
+		String intentSetNodeSUID = intentSetNode.getSUID();
+
+		String directToStatePathFromIntent = "match (is:IntentSet{SUID:" + intentSetNodeSUID + "}), paths=((is)-[]->(s:State)) return paths";
+		Path directToStatePath = Neo4jUtil.findDirectToStatePath(directToStatePathFromIntent);
+		if(directToStatePath != null) return createConditionPath(currentStateName, intentName, intentSetNode, directToStatePath);
+
+		String conditionsPathFromIntent = "match (is:IntentSet{SUID:" + intentSetNodeSUID + "}), (is)-[]->(c:Condition), paths=((c)-[*..6]->(:State)) where all(x in nodes(paths) where x.class<>'IntentSet') return paths";
+		Path firstConditionPath = Neo4jUtil.findFirstConditionPath(conditionsPathFromIntent);
+		if(firstConditionPath != null) return createConditionPath(currentStateName, intentName, intentSetNode, firstConditionPath);
+
+		return null;
+	}
+
+	private static ConditionPathRecord createConditionPath(String currentStateName, String intentName, IntentSetNode intentSetNode, Path conditionPath) {
+		List<ConditionNodeRecord> conditionNodeRecords = new ArrayList<>();
+		Iterable<Node> nodes = conditionPath.nodes();
+		Iterator<Node> iterator = nodes.iterator();
+		while(iterator.hasNext()){
+			Node nextNode = iterator.next();
+			ConditionNodeRecord conditionNodeRecord = new ConditionNodeRecord(
+					nextNode.get("SUID").asInt() + "",
+					nextNode.get("domain").asString(),
+					nextNode.get("name").asString(),
+					nextNode.get("_neo4j_label").asString(),
+					nextNode.get("type").asString(),
+					nextNode.get("param").asString(),
+					nextNode.get("option").asString(),
+					nextNode.get("value").asString(),
+					nextNode.get("passed").asBoolean()
+			);
+			conditionNodeRecords.add(conditionNodeRecord);
+		}
+		String endState = conditionPath.end().get("value").asString();			//此路径最后一个节点必须是一个State节点
+		ConditionPathRecord conditionPathRecord = new ConditionPathRecord(currentStateName, intentName, intentSetNode.getSUID(), conditionNodeRecords, endState, true);
+
+		return conditionPathRecord;
+	}
+
+
+	public static Path findDirectToStatePath(String directToStatePathFromIntent) {
+		Session session = null;
+		Result result = null;
 		try {
-			Result result = executeCypherSql(cypherSql);
-			if (result.hasNext()) {
-				List<Record> records = result.list();
-				for (Record recordItem : records) {
-					List<Pair<String, Value>> f = recordItem.fields();
-					HashMap<String, Object> rss = new HashMap<String, Object>();
-					for (Pair<String, Value> pair : f) {
-						String key = pair.key();
-						Value value = pair.value();
-						rss.put(key,value);
+			session = neo4jDriver.session();
+			result = session.run(directToStatePathFromIntent);
+			if (result != null && result.hasNext()) {
+				List<Record> pathRecords = result.list();
+				PATH : for (Record pathRecord : pathRecords) {
+					List<Pair<String, Value>> pathInfoPairs = pathRecord.fields();
+					Pair<String, Value> pathInfoPair = pathInfoPairs.get(0);            //此处断定pathInfoPairs里面只有一个元素，但如果以后发生特殊情况，则还是要遍历。
+					Value value = pathInfoPair.value();
+					Path path = value.asPath();
+					SEGMENT : for (Path.Segment segment : path) {                       //取出当前Path的一个段Segment
+						Node end = segment.end();
+						if(end.get("value").equals("State")) return path;               //循环出口：如果end节点是一个状态节点，则说明已经走到此Path尾端，则此Path完全可行，返回此Path
 					}
-					resultData.add(rss);
 				}
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage());
+			e.printStackTrace();
+		} finally {
+			try{
+				session.close();
+			}catch (Exception e){
+				e.printStackTrace();
+			}
 		}
-		return resultData;
+		return null;
 	}
-	/**
-	 * 返回关系，不保留节点内容
-	 *
-	 * @param cypherSql
-	 * @return
-	 */
-	public static List<HashMap<String, Object>> getGraphRelationShip(String cypherSql) {
-		List<HashMap<String, Object>> ents = new ArrayList<HashMap<String, Object>>();
+
+	public static Path findFirstConditionPath(String cypherSql){
+		Session session = null;
+		Result result = null;
 		try {
-			Result result = executeCypherSql(cypherSql);
-			if (result.hasNext()) {
-				List<Record> records = result.list();
-				for (Record recordItem : records) {
-					List<Pair<String, Value>> f = recordItem.fields();
-					for (Pair<String, Value> pair : f) {
-						HashMap<String, Object> rss = new HashMap<String, Object>();
-						String typeName = pair.value().type().name();
-						if (typeName.equals("RELATIONSHIP")) {
-							Relationship rship = pair.value().asRelationship();
-							String uuid = String.valueOf(rship.id());
-							String sourceId = String.valueOf(rship.startNodeId());
-							String targetId = String.valueOf(rship.endNodeId());
-							Map<String, Object> map = rship.asMap();
-							for (Entry<String, Object> entry : map.entrySet()) {
-								String key = entry.getKey();
-								rss.put(key, entry.getValue());
-							}
-							rss.put("uuid", uuid);
-							rss.put("sourceId", sourceId);
-							rss.put("targetId", targetId);
-							ents.add(rss);
-						}
+			session = neo4jDriver.session();
+			result = session.run(cypherSql);
+			if (result != null && result.hasNext()) {
+				Map<String, Boolean> conditionResMap = new HashMap<>();                 //用来记录一个条件的检测结果，多条path可以公用
+				List<Record> pathRecords = result.list();
+				PATH : for (Record pathRecord : pathRecords) {
+					List<Pair<String, Value>> pathInfoPairs = pathRecord.fields();
+					Pair<String, Value> pathInfoPair = pathInfoPairs.get(0);            //此处断定pathInfoPairs里面只有一个元素，但如果以后发生特殊情况，则还是要遍历。
+					Value value = pathInfoPair.value();
+					Path path = value.asPath();
+					SEGMENT : for (Path.Segment segment : path) {                       //取出当前Path的一个段Segment
+						Node start = segment.start();
+						boolean startConditionRes = checkConditionNode(start, conditionResMap);
+//                        if(!startConditionRes) continue PATH;
+
+						Relationship relationship = segment.relationship();
+						boolean shouldGoOn = checkRelationship(startConditionRes, relationship);
+						if(!shouldGoOn) continue PATH;
+
+						Node end = segment.end();
+						if(end.get("value").equals("State")) return path;               //循环出口：如果end节点是一个状态节点，则说明已经走到此Path尾端，则此Path完全可行，返回此Path
+//                        boolean endConditionRes = checkConditionNode(end, conditionResMap);
+//                        if(!endConditionRes) continue PATH;
 					}
 				}
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage());
-		}
-		return ents;
-	}
-
-
-	/**
-	 * 获取值类型的结果,如count,uuid
-	 *
-	 * @return 1 2 3 等数字类型
-	 */
-	public static long getGraphValue(String cypherSql) {
-		long val = 0;
-		try {
-			Result cypherResult = executeCypherSql(cypherSql);
-			if (cypherResult.hasNext()) {
-				Record record = cypherResult.next();
-				for (Value value : record.values()) {
-					val = value.asLong();
-				}
-			}
-		} catch (Exception e) {
-			log.error(e.getMessage());
-		}
-		return val;
-	}
-
-	/**
-	 * 返回节点和关系，节点node,关系relationship,路径path,集合list,map
-	 *
-	 * @param cypherSql
-	 * @return
-	 */
-	public static HashMap<String, Object> getGraphNodeAndShip(String cypherSql) {
-		HashMap<String, Object> mo = new HashMap<String, Object>();
-		try {
-			Result result = executeCypherSql(cypherSql);
-			if (result.hasNext()) {
-				List<Record> records = result.list();
-				List<HashMap<String, Object>> ents = new ArrayList<HashMap<String, Object>>();
-				List<HashMap<String, Object>> ships = new ArrayList<HashMap<String, Object>>();
-				List<String> uuids = new ArrayList<String>();
-				for (Record recordItem : records) {
-					List<Pair<String, Value>> f = recordItem.fields();
-					for (Pair<String, Value> pair : f) {
-						HashMap<String, Object> rShips = new HashMap<String, Object>();
-						HashMap<String, Object> rss = new HashMap<String, Object>();
-						String typeName = pair.value().type().name();
-						if ("NULL".equals(typeName)) {
-							continue;
-						}
-						if ("NODE".equals(typeName)) {
-							Node noe4jNode = pair.value().asNode();
-							Map<String, Object> map = noe4jNode.asMap();
-							String uuid = String.valueOf(noe4jNode.id());
-							if (!uuids.contains(uuid)) {
-								for (Entry<String, Object> entry : map.entrySet()) {
-									String key = entry.getKey();
-									rss.put(key, entry.getValue());
-								}
-								rss.put("uuid", uuid);
-								uuids.add(uuid);
-							}
-							if (!rss.isEmpty()) {
-								ents.add(rss);
-							}
-						} else if ("RELATIONSHIP".equals(typeName)) {
-							Relationship rship = pair.value().asRelationship();
-							String uuid = String.valueOf(rship.id());
-							String sourceId = String.valueOf(rship.startNodeId());
-							String targetId = String.valueOf(rship.endNodeId());
-							Map<String, Object> map = rship.asMap();
-							for (Entry<String, Object> entry : map.entrySet()) {
-								String key = entry.getKey();
-								rShips.put(key, entry.getValue());
-							}
-							rShips.put("uuid", uuid);
-							rShips.put("sourceId", sourceId);
-							rShips.put("targetId", targetId);
-							if (!rShips.isEmpty()) {
-								ships.add(rShips);
-							}
-						} else if ("PATH".equals(typeName)) {
-							Path path = pair.value().asPath();
-							for (Node nodeItem : path.nodes()) {
-								Map<String, Object> map = nodeItem.asMap();
-								String uuid = String.valueOf(nodeItem.id());
-								rss = new HashMap<String, Object>();
-								if (!uuids.contains(uuid)) {
-									for (Entry<String, Object> entry : map.entrySet()) {
-										String key = entry.getKey();
-										rss.put(key, entry.getValue());
-									}
-									rss.put("uuid", uuid);
-									uuids.add(uuid);
-								}
-								if (!rss.isEmpty()) {
-									ents.add(rss);
-								}
-							}
-							for (Relationship next : path.relationships()) {
-								rShips = new HashMap<String, Object>();
-								String uuid = String.valueOf(next.id());
-								String sourceId = String.valueOf(next.startNodeId());
-								String targetId = String.valueOf(next.endNodeId());
-								Map<String, Object> map = next.asMap();
-								for (Entry<String, Object> entry : map.entrySet()) {
-									String key = entry.getKey();
-									rShips.put(key, entry.getValue());
-								}
-								rShips.put("uuid", uuid);
-								rShips.put("sourceId", sourceId);
-								rShips.put("targetId", targetId);
-								if (!rShips.isEmpty()) {
-									ships.add(rShips);
-								}
-							}
-						} else if (typeName.contains("LIST")) {
-							Iterable<Value> val = pair.value().values();
-							Value next = val.iterator().next();
-							String type = next.type().name();
-							if ("RELATIONSHIP".equals(type)) {
-								Relationship rship = next.asRelationship();
-								String uuid = String.valueOf(rship.id());
-								String sourceId = String.valueOf(rship.startNodeId());
-								String targetId = String.valueOf(rship.endNodeId());
-								Map<String, Object> map = rship.asMap();
-								for (Entry<String, Object> entry : map.entrySet()) {
-									String key = entry.getKey();
-									rShips.put(key, entry.getValue());
-								}
-								rShips.put("uuid", uuid);
-								rShips.put("sourceId", sourceId);
-								rShips.put("targetId", targetId);
-								if (!rShips.isEmpty()) {
-									ships.add(rShips);
-								}
-							}
-						} else if (typeName.contains("MAP")) {
-							rss.put(pair.key(), pair.value().asMap());
-						} else {
-							rss.put(pair.key(), pair.value().toString());
-							if (!rss.isEmpty()) {
-								ents.add(rss);
-							}
-						}
-					}
-				}
-				mo.put("node", ents);
-				mo.put("relationship", toDistinctList(ships));
-			}
-
-		} catch (Exception e) {
-			log.error(e.getMessage());
-		}
-		return mo;
-	}
-
-
-	/**
-	 * 去掉json键的引号，否则neo4j会报错
-	 *
-	 * @param jsonStr
-	 * @return
-	 */
-	public static String getFilterPropertiesJson(String jsonStr) {
-		return jsonStr.replaceAll("\"(\\w+)\"(\\s*:\\s*)", "$1$2"); // 去掉key的引号
-	}
-
-	/**
-	 * 对象转json，key=value,用于 cypher set语句
-	 *
-	 * @param obj
-	 * @param <T>
-	 * @return
-	 */
-	public static <T> String getKeyValCyphersql(T obj) {
-		Map<String, Object> map = new HashMap<String, Object>();
-		List<String> sqlList = new ArrayList<String>();
-		// 得到类对象
-		Class userCla = obj.getClass();
-		/* 得到类中的所有属性集合 */
-		Field[] fs = userCla.getDeclaredFields();
-		for (int i = 0; i < fs.length; i++) {
-			Field f = fs[i];
-			Class type = f.getType();
-
-			f.setAccessible(true); // 设置些属性是可以访问的
-			Object val = new Object();
-			try {
-				val = f.get(obj);
-				if (val == null) {
-					val = "";
-				}
-				String sql = "";
-				String key = f.getName();
-				if (val instanceof String[]) {
-					//如果为true则强转成String数组
-					String[] arr = (String[]) val;
-					String v = "";
-					for (int j = 0; j < arr.length; j++) {
-						arr[j] = "'" + arr[j] + "'";
-					}
-					v = String.join(",", arr);
-					sql = "n." + key + "=[" + val + "]";
-				} else if (val instanceof List) {
-					//如果为true则强转成String数组
-					List<String> arr = (ArrayList<String>) val;
-					List<String> aa = new ArrayList<String>();
-					String v = "";
-					for (String s : arr) {
-						s = "'" + s + "'";
-						aa.add(s);
-					}
-					v = String.join(",", aa);
-					sql = "n." + key + "=[" + v + "]";
-				} else {
-					// 得到此属性的值
-					map.put(key, val);// 设置键值
-					if (type.getName().equals("int")) {
-						sql = "n." + key + "=" + val + "";
-					} else {
-						sql = "n." + key + "='" + val + "'";
-					}
-				}
-
-				sqlList.add(sql);
-			} catch (IllegalArgumentException | IllegalAccessException e) {
-				log.error(e.getMessage());
+			e.printStackTrace();
+		} finally {
+			try{
+				session.close();
+			}catch (Exception e){
+				e.printStackTrace();
 			}
 		}
-		return  String.join(",", sqlList);
+		return null;
 	}
 
-	/**
-	 * 将haspmap集合反序列化成对象集合
-	 *
-	 * @param maps
-	 * @param type
-	 * @param <T>
-	 * @return
-	 */
-	public static <T> List<T> hashMapToObject(List<HashMap<String, Object>> maps, Class<T> type) {
-		try {
-			List<T> list = new ArrayList<T>();
-			for (HashMap<String, Object> r : maps) {
-				T t = type.newInstance();
-				Iterator iter = r.entrySet().iterator();// 该方法获取列名.获取一系列字段名称.例如name,age...
-				while (iter.hasNext()) {
-					Entry entry = (Entry) iter.next();// 把hashmap转成Iterator再迭代到entry
-					String key = entry.getKey().toString(); // 从iterator遍历获取key
-					Object value = entry.getValue(); // 从hashmap遍历获取value
-					if ("serialVersionUID".toLowerCase().equals(key.toLowerCase())) {
-						continue;
-					}
-					Field field = type.getDeclaredField(key);// 获取field对象
-					if (field != null) {
-						//System.out.print(field.getType());
-						field.setAccessible(true);
-						//System.out.print(field.getType().getName());
-						if (field.getType() == int.class || field.getType() == Integer.class) {
-							if (value == null || StringUtil.isBlank(value.toString())) {
-								field.set(t, 0);// 设置值
-							} else {
-								field.set(t, Integer.parseInt(value.toString()));// 设置值
-							}
-						} else if (field.getType() == long.class || field.getType() == Long.class) {
-							if (value == null || StringUtil.isBlank(value.toString())) {
-								field.set(t, 0);// 设置值
-							} else {
-								field.set(t, Long.parseLong(value.toString()));// 设置值
-							}
+	private static boolean checkConditionNode(Node node, Map<String, Boolean> conditionResMap) {
+		String nodeClass = node.get("class").asString();
+		String suid = node.get("SUID").asInt() + "";
+		if(!nodeClass.equals("Condition") || suid.equals("null")) return false;
 
-						} else if (field.getType() == Double.class) {
-							if (value == null || StringUtil.isBlank(value.toString())) {
-								field.set(t, 0.0);// 设置值
-							} else {
-								field.set(t, Double.parseDouble(value.toString()));// 设置值
-							}
+		Boolean aBoolean = conditionResMap.get(suid);
+		if(aBoolean != null) return aBoolean;
 
-						} else {
-							if (field.getType().equals(List.class)) {
-								if (value == null || StringUtil.isBlank(value.toString())) {
-									field.set(t, null);
-								} else {
-									field.set(t, value);// 设置值
-								}
-							} else {
-								field.set(t, value);// 设置值
-							}
-						}
-					}
+		String domain = node.get("domain").asString();
+		String type = node.get("type").asString();
+		String param = node.get("param").asString();
+		String option = node.get("option").asString();
+		String value = node.get("value").asString();
+		boolean checkValueRes = checkConditionValue(domain, type, param, option, value);
+		conditionResMap.put(suid, checkValueRes);
 
+		return checkValueRes;
+	}
+
+	private static boolean checkConditionValue(String domain, String type, String param, String option, String compareValueStr) {
+		if(domain.equals("null") || type.equals("null") || param.equals("null") || option.equals("null") || compareValueStr.equals("null")) return false; //todo:这里还是抛出一个专有异常吧
+		String currentValueStr = "";   //todo：这里来根据 domain + type + param 获取当前业务值
+		switch (option){
+			case "gt" : {   //greater than  （大于）（比较值必须为数值）
+				try{
+					float currentValue = Float.parseFloat(currentValueStr);
+					float compareValue = Float.parseFloat(compareValueStr);
+					return currentValue > compareValue;
+				}catch (NumberFormatException e){
+					e.printStackTrace();
 				}
-				list.add(t);
+				break;
 			}
-
-			return list;
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	/**
-	 * 将haspmap反序列化成对象
-	 *
-	 * @param map
-	 * @param type
-	 * @param <T>
-	 * @return
-	 */
-	public static <T> T hashMapToObjectItem(HashMap<String, Object> map, Class<T> type) {
-		try {
-			T t = type.newInstance();
-			Iterator iter = map.entrySet().iterator();
-			while (iter.hasNext()) {
-				Entry entry = (Entry) iter.next();// 把hashmap转成Iterator再迭代到entry
-				String key = entry.getKey().toString(); // 从iterator遍历获取key
-				Object value = entry.getValue(); // 从hashmap遍历获取value
-				if ("serialVersionUID".toLowerCase().equals(key.toLowerCase())) {
-					continue;
+			case "ge" : {   //greater equals（大于等于）（比较值必须为数值）
+				try{
+					float currentValue = Float.parseFloat(currentValueStr);
+					float compareValue = Float.parseFloat(compareValueStr);
+					return currentValue >= compareValue;
+				}catch (NumberFormatException e){
+					e.printStackTrace();
 				}
-				Field field = type.getDeclaredField(key);// 获取field对象
-				if (field != null) {
-					field.setAccessible(true);
-					if (field.getType() == int.class || field.getType() == Integer.class) {
-						if (value == null || StringUtil.isBlank(value.toString())) {
-							field.set(t, 0);// 设置值
-						} else {
-							field.set(t, Integer.parseInt(value.toString()));// 设置值
-						}
-					} else if (field.getType() == long.class || field.getType() == Long.class) {
-						if (value == null || StringUtil.isBlank(value.toString())) {
-							field.set(t, 0);// 设置值
-						} else {
-							field.set(t, Long.parseLong(value.toString()));// 设置值
-						}
-
-					} else if (field.getType() == Double.class) {
-						if (value == null || StringUtil.isBlank(value.toString())) {
-							field.set(t, 0.0);// 设置值
-						} else {
-							field.set(t, Double.parseDouble(value.toString()));// 设置值
-						}
-
-					} else {
-						if (field.getType().equals(List.class)) {
-							if (value == null || StringUtil.isBlank(value.toString())) {
-								field.set(t, null);
-							} else {
-								field.set(t, value);// 设置值
-							}
-						} else {
-							field.set(t, value);// 设置值
-						}
-
-					}
+				break;
+			}
+			case "eq" : {   //equals        （等于）（比较值必须为数值）
+				try{
+					float currentValue = Float.parseFloat(currentValueStr);
+					float compareValue = Float.parseFloat(compareValueStr);
+					return currentValue == compareValue;
+				}catch (NumberFormatException e){
+					e.printStackTrace();
 				}
-
+				break;
 			}
-
-			return t;
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	/**
-	 * 返回单个节点信息
-	 */
-	public static HashMap<String, Object> getOneNode(String cypherSql) {
-		HashMap<String, Object> ret = new HashMap<String, Object>();
-		try {
-			Result result = executeCypherSql(cypherSql);
-			if (result.hasNext()) {
-				Record record = result.list().get(0);
-				Pair<String, Value> f = record.fields().get(0);
-				String typeName = f.value().type().name();
-				if ("NODE".equals(typeName)) {
-					Node noe4jNode = f.value().asNode();
-					String uuid = String.valueOf(noe4jNode.id());
-					Map<String, Object> map = noe4jNode.asMap();
-					for (Entry<String, Object> entry : map.entrySet()) {
-						String key = entry.getKey();
-						ret.put(key, entry.getValue());
-					}
-					ret.put("uuid", uuid);
+			case "ne" : {   //not equals    （不等于）（比较值必须为数值）
+				try{
+					float currentValue = Float.parseFloat(currentValueStr);
+					float compareValue = Float.parseFloat(compareValueStr);
+					return currentValue != compareValue;
+				}catch (NumberFormatException e){
+					e.printStackTrace();
 				}
+				break;
 			}
-		} catch (Exception e) {
-			log.error(e.getMessage());
+			case "lt" : {   //less than     （小于）（比较值必须为数值）
+				try{
+					float currentValue = Float.parseFloat(currentValueStr);
+					float compareValue = Float.parseFloat(compareValueStr);
+					return currentValue < compareValue;
+				}catch (NumberFormatException e){
+					e.printStackTrace();
+				}
+				break;
+			}
+			case "le" : {   //less equals   （小于等于）（比较值必须为数值）
+				try{
+					float currentValue = Float.parseFloat(currentValueStr);
+					float compareValue = Float.parseFloat(compareValueStr);
+					return currentValue <= compareValue;
+				}catch (NumberFormatException e){
+					e.printStackTrace();
+				}
+				break;
+			}
+
+			case "bt" : {   //between       （在一个数值范围之中）（边界必须为数值）
+				String compareValueStrSub = compareValueStr.substring(1, compareValueStr.length() - 1);         //掐头去尾
+				String[] fromToValueStrs = compareValueStrSub.split(",");
+				if(fromToValueStrs.length != 2) return false;
+
+				try{
+					float fromValue = Float.parseFloat(fromToValueStrs[0].trim());
+					float currentValue = Float.parseFloat(currentValueStr);
+					float toValue = Float.parseFloat(fromToValueStrs[1].trim());
+
+					boolean leftGE = compareValueStr.startsWith("[");
+					boolean leftGT = compareValueStr.startsWith("(");
+					boolean rightLT = compareValueStr.endsWith("]");
+					boolean rightLE = compareValueStr.endsWith(")");
+
+					boolean leftRes = false;
+					boolean rightRes = false;
+
+					if(leftGE) leftRes = currentValue >= fromValue;
+					else if(leftGT) leftRes = currentValue > fromValue;
+
+					if(rightLE) rightRes = currentValue <= toValue;
+					else if(rightLT) rightRes = currentValue < toValue;
+
+					return leftRes && rightRes;
+				}catch (NumberFormatException e){
+					e.printStackTrace();
+				}
+				break;
+			}
+			case "nb" : {   //not between   （不在一个数值范围之中）（边界必须为数值）
+				String compareValueStrSub = compareValueStr.substring(1, compareValueStr.length() - 1);         //掐头去尾
+				String[] fromToValueStrs = compareValueStrSub.split(",");
+				if(fromToValueStrs.length != 2) return false;
+
+				try{
+					float fromValue = Float.parseFloat(fromToValueStrs[0].trim());
+					float currentValue = Float.parseFloat(currentValueStr);
+					float toValue = Float.parseFloat(fromToValueStrs[1].trim());
+
+					boolean leftGE = compareValueStr.startsWith("[");
+					boolean leftGT = compareValueStr.startsWith("(");
+					boolean rightLT = compareValueStr.endsWith("]");
+					boolean rightLE = compareValueStr.endsWith(")");
+
+					boolean leftRes = false;
+					boolean rightRes = false;
+
+					if(leftGE) leftRes = currentValue < fromValue;
+					else if(leftGT) leftRes = currentValue <= fromValue;
+
+					if(rightLE) rightRes = currentValue > toValue;
+					else if(rightLT) rightRes = currentValue >= toValue;
+
+					return leftRes && rightRes;
+				}catch (NumberFormatException e){
+					e.printStackTrace();
+				}
+				break;
+			}
+
+			case "is" : {   //is            （是）（比较值必须为字符串）
+				return currentValueStr.equals(compareValueStr);
+			}
+			case "not" : {  //not           （不是）（比较值必须为字符串）
+				return !currentValueStr.equals(compareValueStr);
+			}
+
+			case "in" : {   //in            （包含于）（比较值必须为逗号隔开的字符串，各个字符串前后不要空格）
+				String[] items = compareValueStr.split(",");
+				Set<String> itemSet = new HashSet<>(Arrays.asList(items));
+				return itemSet.contains(currentValueStr);
+			}
+			case "nn" : {   //not in        （不包含于）（比较值必须为逗号隔开的字符串，各个字符串前后不要空格）
+				String[] items = compareValueStr.split(",");
+				Set<String> itemSet = new HashSet<>(Arrays.asList(items));
+				return !itemSet.contains(currentValueStr);
+			}
 		}
-		return ret;
+		return false;
 	}
 
-	public static boolean batchRunCypherWithTx(List<String> cyphers) {
-		Session session = neo4jDriver.session();
-		try (Transaction tx = session.beginTransaction()) {
-			for (String cypher : cyphers) {
-				tx.run(cypher);
-			}
-			tx.commit();
-		} catch (Exception e) {
-			log.info(e.getMessage());
-			return false;
-		}
-		return true;
+	private static boolean checkRelationship(boolean conditionRes, Relationship relationship) {
+		String weather = relationship.get("weather").asString();
+		if(weather == null || weather.equals("")) weather = "Y";
+
+		if(conditionRes && weather.equals("Y")) return true;
+		else if(conditionRes && weather.equals("N")) return false;
+		else if(!conditionRes && weather.equals("Y")) return false;
+		else if(!conditionRes && weather.equals("N")) return true;
+		return false;
 	}
 
-
-	public static List<HashMap<String, Object>> toDistinctList(List<HashMap<String, Object>> list) {
-		Set<String> keysSet = new HashSet<String>();
-		Iterator<HashMap<String, Object>> it = list.iterator();
-		while (it.hasNext()) {
-			HashMap<String, Object> map = it.next();
-			String uuid = (String) map.get("uuid");
-			int beforeSize = keysSet.size();
-			keysSet.add(uuid);
-			int afterSize = keysSet.size();
-			if (afterSize != (beforeSize + 1)) {
-				it.remove();
-			}
-		}
-		return list;
-	}
 }

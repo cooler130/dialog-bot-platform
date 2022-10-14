@@ -73,7 +73,9 @@ public class SlotOperateServiceImpl implements SlotOperateService {
         Intent targetIntent = null;                                                                                     //目标意图
         Integer targetIntentId = null;                                                                                  //目标意图ID（DM意图的ID）
         Integer targetLastFromStateId = null;                                                                           //前面一轮的fromStateId
+        String targetLastFromState = null;
         Integer targetFromStateId = null;                                                                               //前面一轮的toStateId，可以作为本轮的fromStateId
+        String targetFromState = null;
 
         Boolean finalSameDomain = null;                                                                                 //是否跟上轮相同领域
 
@@ -107,7 +109,9 @@ public class SlotOperateServiceImpl implements SlotOperateService {
         targetIntentId = domainDesionData.getIntentId();
         taskName = domainDesionData.getTaskName();
         targetLastFromStateId = domainDesionData.getLastFromStateId();
+        targetLastFromState = domainDesionData.getLastFromState();
         targetFromStateId = domainDesionData.getFromStateId();
+        targetFromState = domainDesionData.getFromState();
 
         targetSlotStateMap = domainDesionData.getFixedSlotStateMap();
         unkonwSlotStateMap = domainDesionData.getUnknownSlotStateMap();
@@ -143,7 +147,7 @@ public class SlotOperateServiceImpl implements SlotOperateService {
 
         dialogState.addToModelStateMap(Constant.SO_DOMAIN_DECISION_MAP, domainDecisionDataMap);
 
-        fillParamData(dialogState, dmRequest, sentence, nluDomainName, targetIntent, targetSlotStateMap, unkonwSlotStateMap, targetParamValueMap, finalSameDomain, targetLastFromStateId, targetFromStateId, bizDataMSMap);
+        fillParamData(dialogState, dmRequest, sentence, nluDomainName, targetIntent, targetSlotStateMap, unkonwSlotStateMap, targetParamValueMap, finalSameDomain, targetLastFromStateId, targetLastFromState, targetFromStateId, targetFromState, bizDataMSMap);
 
         return dialogState;
     }
@@ -159,18 +163,22 @@ public class SlotOperateServiceImpl implements SlotOperateService {
      * @param targetUnkonwSlotStateMap
      * @param sameDomain
      * @param lastFromStateId
+     * @param lastFromState
      * @param fromStateId
+     * @param fromState
      */
     private void fillParamData(DialogState dialogState, DMRequest dmRequest, String sentence, String targetNluDomainName, Intent targetIntent,
                                Map<String, SlotState> targetSlotStateMap, Map<String, SlotState> targetUnkonwSlotStateMap, Map<String, String> targetSlotValueMap,
-                               Boolean sameDomain, int lastFromStateId, int fromStateId, Map<String, BizDataModelState<String>> bizDataMSMap) {
+                               Boolean sameDomain, int lastFromStateId, String lastFromState, int fromStateId, String fromState, Map<String, BizDataModelState<String>> bizDataMSMap) {
 
         //保存本轮的Intent，以及意图相关数据（NLU_DOMAIN、DM_DOMAIN， 这两个领域可能能用到这轮业务计算）
         Map<String, String> paramValueMap = new HashMap<>();
         paramValueMap.put("$" + PC.SENTENCE + "$", sentence);
         paramValueMap.put("$" + PC.SAME_DOMAIN + "$", sameDomain + "");
         paramValueMap.put("$" + PC.LAST_FROM_STATE_ID + "$", lastFromStateId + "");
+        paramValueMap.put("$" + PC.LAST_FROM_STATE + "$", lastFromState + "");
         paramValueMap.put("$" + PC.FROM_STATE_ID + "$", fromStateId + "");
+        paramValueMap.put("$" + PC.FROM_STATE + "$", fromState + "");
 
         paramValueMap.put("$" + PC.NLU_DOMAIN + "$", targetNluDomainName);
 

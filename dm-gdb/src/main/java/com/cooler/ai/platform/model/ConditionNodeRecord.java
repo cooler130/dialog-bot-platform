@@ -5,12 +5,11 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class ConditionNode {
+public class ConditionNodeRecord {
     private String SUID;
-    private String _cytoscape_network;
-    private String _neo4j_label;
+    private String domain;
     private String name;
-    private String title;
+    private String _neo4j_label;
 
     private String type;
     private String param;

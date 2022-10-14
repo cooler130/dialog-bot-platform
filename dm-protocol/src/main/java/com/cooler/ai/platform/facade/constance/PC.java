@@ -24,6 +24,12 @@ public class PC {
     public static final String FROM_STATE_ID2 = "from_state_id2";                   //FROM_STATE_ID变迁失败，会转到START_STATE_ID尝试，两个状态相同，则没有跳出上下文，不同，FROM_STATE_ID2必须为1，则跳出了上下文
     public static final String TO_STATE_ID = "to_state_id";                         //当前状态ID（变迁最后得到的状态ID）
 
+    public static final String LAST_FROM_STATE = "last_from_state";                 //上一轮的起始状态
+    public static final String FROM_STATE = "from_state";                           //从哪个状态开始变迁（变迁之前的状态ID）
+    public static final String FROM_STATE2 = "from_state2";                         //FROM_STATE_ID变迁失败，会转到START_STATE_ID尝试，两个状态相同，则没有跳出上下文，不同，FROM_STATE_ID2必须为1，则跳出了上下文
+    public static final String TO_STATE = "to_state";                               //当前状态ID（变迁最后得到的状态ID）
+
+
     public static final String TRANSFERRED_STEP_COUNT = "transferred_step_count";   //迁移步数
     public static final String LAST_SUCCESS_CONDITION_CONTEXT = "last_success_condition_context";  //最后成功迁移所使用的ConditionContext
     public static final String FIRST_BAD_CONDITION_DATA = "first_bad_condition_data";  //第一个导致变迁失败的变迁条件

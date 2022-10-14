@@ -114,9 +114,16 @@ public class Constant {
 
     //--------------------------------------------------------------------------意图状态类型
     public static final int GLOBAL_START_ID = 1;                                //全局开始状态
+    public static final String GLOBAL_START = "global_start";
+
     public static final int GLOBAL_END_ID = 2;                                  //全局结束状态
+    public static final String GLOBAL_END = "global_end";
+
     public static final int GLOBAL_ERROR_ID = 3;                                //全局错误状态
+    public static final String GLOBAL_ERROR = "global_error";
+
     public static final int GLOBAL_ANY_ID = 4;                                  //全局任意状态
+    public static final String GLOBAL_ANY = "global_any";
 
     //--------------------------------------------------------------------------动作类型
     public static final int PROCESSED_ACTION = 1;                               //处理动作

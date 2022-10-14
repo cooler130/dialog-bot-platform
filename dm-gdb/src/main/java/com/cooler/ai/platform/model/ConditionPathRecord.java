@@ -7,12 +7,15 @@ import java.util.List;
 
 @Data
 @AllArgsConstructor
-public class ConditionPath {
-    private String intentSetSUID;
+public class ConditionPathRecord {
+    private String startStateName;
     private String intentName;
-    private List<ConditionNode> conditionNodes;
-    private String endStateSUID;
+    private String intentSetSUID;
+    private List<ConditionNodeRecord> conditionNodeRecords;
     private String endStateName;
 
     private Boolean allPassed;
+
+
+
 }

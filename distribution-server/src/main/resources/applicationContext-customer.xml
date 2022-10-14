@@ -8,6 +8,7 @@
     <dubbo:reference id="waimaiDmFacade" interface="com.cooler.ai.platform.facade.DMFacade" group="waimai" version="2.0-SNAPSHOT" />
     <dubbo:reference id="calloutDmFacade" interface="com.cooler.ai.platform.facade.DMFacade" group="callout" version="2.0-SNAPSHOT" />
     <dubbo:reference id="burouterDmFacade" interface="com.cooler.ai.platform.facade.DMFacade" group="burouter" version="2.0-SNAPSHOT" />
+    <dubbo:reference id="burouter2DmFacade" interface="com.cooler.ai.platform.facade.DMFacade" group="burouter2" version="2.0-SNAPSHOT" />
 
     <bean id="xmlDMFacadeMapService" class="com.cooler.ai.platform.service.impl.XmlDMFacadeMapServiceImpl">
         <property name="dmFacadeMap">
@@ -15,6 +16,7 @@
                 <entry key="waimaiBot" value-ref="waimaiDmFacade"/>
                 <entry key="calloutBot" value-ref="calloutDmFacade"/>
                 <entry key="burouterBot" value-ref="burouterDmFacade"/>
+                <entry key="burouter2Bot" value-ref="burouter2DmFacade"/>
             </map>
         </property>
     </bean>
