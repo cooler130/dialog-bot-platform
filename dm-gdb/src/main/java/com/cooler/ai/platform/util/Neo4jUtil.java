@@ -1,5 +1,6 @@
 package com.cooler.ai.platform.util;
 
+import com.cooler.ai.platform.facade.model.DialogState;
 import com.cooler.ai.platform.model.ConditionNodeRecord;
 import com.cooler.ai.platform.model.ConditionPathRecord;
 import com.cooler.ai.platform.model.IntentSetNode;
@@ -15,7 +16,6 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.Map.Entry;
 
 @Component
 @Lazy(false)
@@ -77,7 +77,7 @@ public class Neo4jUtil {
 	 * @param intentSetNode IntentSet节点
 	 * @return  可通过的路径
 	 */
-	public static ConditionPathRecord tryConditionPathsFromIntent(String currentStateName, String intentName, IntentSetNode intentSetNode) {
+	public static ConditionPathRecord tryConditionPathsFromIntent(DialogState dialogState, String currentStateName, String intentName, IntentSetNode intentSetNode) {
 		String intentSetNodeSUID = intentSetNode.getSUID();
 
 		String directToStatePathFromIntent = "match (is:IntentSet{SUID:" + intentSetNodeSUID + "}), paths=((is)-[]->(s:State)) return paths";
@@ -85,7 +85,7 @@ public class Neo4jUtil {
 		if(directToStatePath != null) return createConditionPath(currentStateName, intentName, intentSetNode, directToStatePath);
 
 		String conditionsPathFromIntent = "match (is:IntentSet{SUID:" + intentSetNodeSUID + "}), (is)-[]->(c:Condition), paths=((c)-[*..6]->(:State)) where all(x in nodes(paths) where x.class<>'IntentSet') return paths";
-		Path firstConditionPath = Neo4jUtil.findFirstConditionPath(conditionsPathFromIntent);
+		Path firstConditionPath = Neo4jUtil.findFirstConditionPath(conditionsPathFromIntent, dialogState);
 		if(firstConditionPath != null) return createConditionPath(currentStateName, intentName, intentSetNode, firstConditionPath);
 
 		return null;
@@ -101,12 +101,12 @@ public class Neo4jUtil {
 					nextNode.get("SUID").asInt() + "",
 					nextNode.get("domain").asString(),
 					nextNode.get("name").asString(),
-					nextNode.get("_neo4j_label").asString(),
+					nextNode.get("class").asString(),
 					nextNode.get("type").asString(),
 					nextNode.get("param").asString(),
 					nextNode.get("option").asString(),
 					nextNode.get("value").asString(),
-					nextNode.get("passed").asBoolean()
+					true
 			);
 			conditionNodeRecords.add(conditionNodeRecord);
 		}
@@ -148,7 +148,7 @@ public class Neo4jUtil {
 		return null;
 	}
 
-	public static Path findFirstConditionPath(String cypherSql){
+	public static Path findFirstConditionPath(String cypherSql, DialogState dialogState){
 		Session session = null;
 		Result result = null;
 		try {
@@ -164,7 +164,7 @@ public class Neo4jUtil {
 					Path path = value.asPath();
 					SEGMENT : for (Path.Segment segment : path) {                       //取出当前Path的一个段Segment
 						Node start = segment.start();
-						boolean startConditionRes = checkConditionNode(start, conditionResMap);
+						boolean startConditionRes = checkConditionNode(dialogState, start, conditionResMap);
 //                        if(!startConditionRes) continue PATH;
 
 						Relationship relationship = segment.relationship();
@@ -172,7 +172,7 @@ public class Neo4jUtil {
 						if(!shouldGoOn) continue PATH;
 
 						Node end = segment.end();
-						if(end.get("value").equals("State")) return path;               //循环出口：如果end节点是一个状态节点，则说明已经走到此Path尾端，则此Path完全可行，返回此Path
+						if(end.get("class").asString().equals("State")) return path;               //循环出口：如果end节点是一个状态节点，则说明已经走到此Path尾端，则此Path完全可行，返回此Path
 //                        boolean endConditionRes = checkConditionNode(end, conditionResMap);
 //                        if(!endConditionRes) continue PATH;
 					}
@@ -190,7 +190,7 @@ public class Neo4jUtil {
 		return null;
 	}
 
-	private static boolean checkConditionNode(Node node, Map<String, Boolean> conditionResMap) {
+	private static boolean checkConditionNode(DialogState dialogState, Node node, Map<String, Boolean> conditionResMap) {
 		String nodeClass = node.get("class").asString();
 		String suid = node.get("SUID").asInt() + "";
 		if(!nodeClass.equals("Condition") || suid.equals("null")) return false;
@@ -203,15 +203,15 @@ public class Neo4jUtil {
 		String param = node.get("param").asString();
 		String option = node.get("option").asString();
 		String value = node.get("value").asString();
-		boolean checkValueRes = checkConditionValue(domain, type, param, option, value);
+		boolean checkValueRes = checkConditionValue(dialogState, domain, type, param, option, value);
 		conditionResMap.put(suid, checkValueRes);
 
 		return checkValueRes;
 	}
 
-	private static boolean checkConditionValue(String domain, String type, String param, String option, String compareValueStr) {
-		if(domain.equals("null") || type.equals("null") || param.equals("null") || option.equals("null") || compareValueStr.equals("null")) return false; //todo:这里还是抛出一个专有异常吧
-		String currentValueStr = "";   //todo：这里来根据 domain + type + param 获取当前业务值
+	private static boolean checkConditionValue(DialogState dialogState, String domain, String paramType, String param, String option, String compareValueStr) {
+		if(domain.equals("null") || paramType.equals("null") || param.equals("null") || option.equals("null") || compareValueStr.equals("null")) return false; //todo:这里还是抛出一个专有异常吧
+		String currentValueStr = dialogState.getParamValueOrDefaultOfGDB(param, paramType, "none");   //todo：这里来根据 domain + type + param 获取当前业务值
 		switch (option){
 			case "gt" : {   //greater than  （大于）（比较值必须为数值）
 				try{
@@ -358,7 +358,7 @@ public class Neo4jUtil {
 
 	private static boolean checkRelationship(boolean conditionRes, Relationship relationship) {
 		String weather = relationship.get("weather").asString();
-		if(weather == null || weather.equals("")) weather = "Y";
+		if(weather == null || weather.equals("") || weather.equals("null")) weather = "Y";
 
 		if(conditionRes && weather.equals("Y")) return true;
 		else if(conditionRes && weather.equals("N")) return false;

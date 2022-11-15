@@ -47,13 +47,13 @@ public class DSTServiceImpl implements DSTService {
         //1.通过当前状态currentState找出所有包含intentName的intentSet节点
         List<IntentSetNode> selectedIntentSetNodes = selectIntentSetNodes(domainName, null, currentState, intentName);
         if(selectedIntentSetNodes.size() == 0){
-            //todo:当前状态下，遇到了无法处理的意图
+            //todo:当前状态下，遇到了无法处理的意图，无法理解则跳到start节点尝试
         }
 
         //2.（遍历）收集并检测每一个IntentSet节点，找到第一个"可行"路径
         ConditionPathRecord passedConditionPathRecord = null;
         for (IntentSetNode intentSetNode : selectedIntentSetNodes) {
-            passedConditionPathRecord = Neo4jUtil.tryConditionPathsFromIntent(currentState, intentName, intentSetNode);
+            passedConditionPathRecord = Neo4jUtil.tryConditionPathsFromIntent(dialogState, currentState, intentName, intentSetNode);
             if(passedConditionPathRecord != null) break;
         }
 

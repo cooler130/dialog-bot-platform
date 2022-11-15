@@ -67,6 +67,18 @@ public class Constant {
     public static final int SLOT_BIZ_PARAM = 5;                                 //先槽位后业务参数
     public static final int BIZ_SLOT_PARAM = 6;                                 //先业务后槽位参数
 
+
+    public static final String UNKNOWN_TYPE = "unknown";                                 //未知参数
+    public static final String NULL_TYPE = "null";                                     //空参数
+
+    public static final String SLOT_TYPE = "slot";                                     //槽位参数
+    public static final String CUSTOM_TYPE = "custom";                                   //定制/用户参数（首尾有#，包含用户请求数据、用户定制化数据）
+    public static final String PLATFORM_TYPE = "platform";                                 //平台参数（首尾有$，有限的几个：sameDomain、currentStateId、dmDomain、nluDomain、intentId、intentName）
+    public static final String BIZ_TYPE = "biz";                                      //业务参数（首尾有%，由以上参数调接口得来，跟业务相关）
+
+    public static final String SLOT_BIZ_TYPE = "slot_biz";                                 //先槽位后业务参数
+    public static final String BIZ_SLOT_TYPE = "biz_slot";                                 //先业务后槽位参数
+
     //--------------------------------------------------------------------------4类参数检测类型
     public static final int NO_CHECK = 0;                                       //无检测（自然通过或禁止）
     public static final int HAS_VALUE = 1;                                      //是否有值

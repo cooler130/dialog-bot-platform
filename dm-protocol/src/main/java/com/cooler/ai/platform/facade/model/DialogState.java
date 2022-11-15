@@ -201,4 +201,57 @@ public class DialogState implements Serializable{
         return value;
     }
 
+    public String getParamValueOfGDB(String key, String paramType) {
+        ModelState<Map<String, String>> slotValueMapMS = modelStateMap.get(Constant.PARAM_VALUE_MAP);
+        if(slotValueMapMS == null){
+            slotValueMapMS = new BaseModelState<>();
+            slotValueMapMS.setT(new HashMap<String, String>());
+            modelStateMap.put(Constant.PARAM_VALUE_MAP, slotValueMapMS);
+            return null;
+        }
+        Map<String, String> slotValueMap = slotValueMapMS.getT();
+        switch (paramType) {
+            case Constant.SLOT_TYPE: {
+                return slotValueMap.get(key);
+            }
+            case Constant.CUSTOM_TYPE: {
+                return slotValueMap.get("#" + key + "#");
+            }
+            case Constant.PLATFORM_TYPE: {
+                return slotValueMap.get("$" + key + "$");
+            }
+            case Constant.BIZ_TYPE: {
+                return slotValueMap.get("%" + key + "%");
+            }
+            case Constant.SLOT_BIZ_TYPE: {
+                String slotValue = slotValueMap.get(key);
+                return (slotValue != null) ? slotValue : slotValueMap.get("%" + key + "%");
+            }
+            case Constant.BIZ_SLOT_TYPE: {
+                String bizValue = slotValueMap.get("%" + key + "%");
+                return (bizValue != null) ? bizValue : slotValueMap.get(key);
+            }
+            default: {
+                String value = slotValueMap.get(key);
+                if (value == null) {
+                    value = slotValueMap.get("%" + key + "%");
+                }
+                if (value == null) {
+                    value = slotValueMap.get("#" + key + "#");
+                }
+                if (value == null) {
+                    value = slotValueMap.get("$" + key + "$");
+                }
+                return value;
+            }
+        }
+    }
+
+    public String getParamValueOrDefaultOfGDB(String key, String paramType, String defaultValue){
+        String value = getParamValueOfGDB(key, paramType);
+        if(value == null){
+            value = defaultValue;
+        }
+        return value;
+    }
 }

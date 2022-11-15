@@ -9,7 +9,7 @@ public class ConditionNodeRecord {
     private String SUID;
     private String domain;
     private String name;
-    private String _neo4j_label;
+    private String _neo4j_labels;
 
     private String type;
     private String param;
