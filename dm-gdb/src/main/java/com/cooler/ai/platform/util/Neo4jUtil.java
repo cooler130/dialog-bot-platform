@@ -117,6 +117,11 @@ public class Neo4jUtil {
 	}
 
 
+	/**
+	 * 根据输入语句，查询直接到一个状态的路径。
+	 * @param directToStatePathFromIntent	查询语句 match (is:IntentSet{SUID:"xxx"}), paths=((is)-[]->(s:State)) return paths
+	 * @return 直接到某个状态的路径
+	 */
 	public static Path findDirectToStatePath(String directToStatePathFromIntent) {
 		Session session = null;
 		Result result = null;
@@ -124,7 +129,7 @@ public class Neo4jUtil {
 			session = neo4jDriver.session();
 			result = session.run(directToStatePathFromIntent);
 			if (result != null && result.hasNext()) {
-				List<Record> pathRecords = result.list();
+				List<Record> pathRecords = result.list();								//这里理应只有一条路径的，因为一个状态+意图，不结合任何条件，只应该有一条短路径。
 				PATH : for (Record pathRecord : pathRecords) {
 					List<Pair<String, Value>> pathInfoPairs = pathRecord.fields();
 					Pair<String, Value> pathInfoPair = pathInfoPairs.get(0);            //此处断定pathInfoPairs里面只有一个元素，但如果以后发生特殊情况，则还是要遍历。
@@ -148,6 +153,12 @@ public class Neo4jUtil {
 		return null;
 	}
 
+	/**
+	 * 找到第一条条件完全满足的路径
+	 * @param cypherSql	查询的sql语句，形如：match (is:IntentSet{SUID:'xxx'}), (is)-[]->(c:Condition), paths=((c)-[*..6]->(:State)) where all(x in nodes(paths) where x.class<>'IntentSet') return paths
+	 * @param dialogState
+	 * @return
+	 */
 	public static Path findFirstConditionPath(String cypherSql, DialogState dialogState){
 		Session session = null;
 		Result result = null;
@@ -162,19 +173,16 @@ public class Neo4jUtil {
 					Pair<String, Value> pathInfoPair = pathInfoPairs.get(0);            //此处断定pathInfoPairs里面只有一个元素，但如果以后发生特殊情况，则还是要遍历。
 					Value value = pathInfoPair.value();
 					Path path = value.asPath();
-					SEGMENT : for (Path.Segment segment : path) {                       //取出当前Path的一个段Segment
+					SEGMENT : for (Path.Segment segment : path) {                       //取出当前Path的一个段Segment，每一只检测这一段的"头结点+关联"的整体结果，不检测这一段的尾结点条件。
 						Node start = segment.start();
 						boolean startConditionRes = checkConditionNode(dialogState, start, conditionResMap);
-//                        if(!startConditionRes) continue PATH;
 
 						Relationship relationship = segment.relationship();
 						boolean shouldGoOn = checkRelationship(startConditionRes, relationship);
 						if(!shouldGoOn) continue PATH;
 
 						Node end = segment.end();
-						if(end.get("class").asString().equals("State")) return path;               //循环出口：如果end节点是一个状态节点，则说明已经走到此Path尾端，则此Path完全可行，返回此Path
-//                        boolean endConditionRes = checkConditionNode(end, conditionResMap);
-//                        if(!endConditionRes) continue PATH;
+						if(end.get("class").asString().equals("State")) return path;    //循环出口：如果end节点是一个状态节点，则说明已经走到此Path尾端，则此Path完全可行，返回此Path
 					}
 				}
 			}

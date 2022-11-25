@@ -1,7 +1,7 @@
 package com.cooler.ai.platform.service.framework.impl;
 
-import com.cooler.ai.platform.dao.DMEntityMapper;
-import com.cooler.ai.platform.entity.*;
+import com.cooler.ai.platform.dao2.DMEntityMapper;
+import com.cooler.ai.platform.entity2.*;
 import com.cooler.ai.platform.service.framework.DMEntityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -19,6 +19,7 @@
 *.bak
 *.log
 *.zip
+*.class
 
 ### NetBeans ###
 /nbproject/private/

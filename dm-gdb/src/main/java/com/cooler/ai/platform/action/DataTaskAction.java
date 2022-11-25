@@ -1,6 +1,6 @@
 package com.cooler.ai.platform.action;
 
-import com.cooler.ai.platform.entity.Transition;
+import com.cooler.ai.platform.entity2.Transition;
 
 import java.util.Map;
 

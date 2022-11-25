@@ -1,8 +1,8 @@
-package com.cooler.ai.platform.service.impl.entity;
+package com.cooler.ai.platform.service2.impl;
 
-import com.cooler.ai.platform.entity.State;
-import com.cooler.ai.platform.dao.StateMapper;
-import com.cooler.ai.platform.service.entity.StateService;
+import com.cooler.ai.platform.entity2.State;
+import com.cooler.ai.platform.dao2.StateMapper;
+import com.cooler.ai.platform.service2.StateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

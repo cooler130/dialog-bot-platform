@@ -1,9 +1,9 @@
-package com.cooler.ai.platform.service.impl.entity;
+package com.cooler.ai.platform.service2.impl;
 
-import com.cooler.ai.platform.dao.TransitionMapper;
-import com.cooler.ai.platform.entity.Transition;
+import com.cooler.ai.platform.dao2.TransitionMapper;
+import com.cooler.ai.platform.entity2.Transition;
 import com.cooler.ai.platform.model.EntityConstant;
-import com.cooler.ai.platform.service.entity.TransitionService;
+import com.cooler.ai.platform.service2.TransitionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -26,7 +26,7 @@
         <!--jdbc的数据库连接 -->
         <jdbcConnection
                 driverClass="com.mysql.jdbc.Driver"
-                connectionURL="jdbc:mysql://127.0.0.1:3306/dm_waimai?useUnicode=true&amp;characterEncoding=utf-8&amp;noDatetimeStringSync=true"
+                connectionURL="jdbc:mysql://127.0.0.1:3306/dm_burouter?useUnicode=true&amp;characterEncoding=utf-8&amp;noDatetimeStringSync=true"
                 userId="root"
                 password="!QAZ2wsx">
         </jdbcConnection>

@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-@Service("initialService")
+@Service("gdbInitialService")
 public class InitialServiceImpl implements InitialService {
 
     private static Logger logger = LoggerFactory.getLogger(InitialServiceImpl.class);

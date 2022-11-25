@@ -5,15 +5,19 @@
     <constructor >
       <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
       <arg column="policy_name" jdbcType="VARCHAR" javaType="java.lang.String" />
-      <arg column="intent_name" jdbcType="VARCHAR" javaType="java.lang.String" />
-      <arg column="state_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="domain_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="task_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="from_state" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="intent_names" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="to_state" jdbcType="VARCHAR" javaType="java.lang.String" />
       <arg column="start_action_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
       <arg column="enable" jdbcType="TINYINT" javaType="java.lang.Byte" />
       <arg column="msg" jdbcType="VARCHAR" javaType="java.lang.String" />
     </constructor>
   </resultMap>
   <sql id="Base_Column_List" >
-    id, policy_name, intent_name, state_id, start_action_id, enable, msg
+    id, policy_name, domain_name, task_name, from_state, intent_names, to_state, start_action_id, 
+    enable, msg
   </sql>
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
     select 
@@ -26,11 +30,13 @@
     where id = #{id,jdbcType=INTEGER}
   </delete>
   <insert id="insert" parameterType="com.cooler.ai.platform.entity.Policy" >
-    insert into policy (id, policy_name, intent_name, 
-      state_id, start_action_id, enable, 
+    insert into policy (id, policy_name, domain_name, 
+      task_name, from_state, intent_names, 
+      to_state, start_action_id, enable, 
       msg)
-    values (#{id,jdbcType=INTEGER}, #{policyName,jdbcType=VARCHAR}, #{intentName,jdbcType=VARCHAR}, 
-      #{stateId,jdbcType=INTEGER}, #{startActionId,jdbcType=INTEGER}, #{enable,jdbcType=TINYINT}, 
+    values (#{id,jdbcType=INTEGER}, #{policyName,jdbcType=VARCHAR}, #{domainName,jdbcType=VARCHAR}, 
+      #{taskName,jdbcType=VARCHAR}, #{fromState,jdbcType=VARCHAR}, #{intentNames,jdbcType=VARCHAR}, 
+      #{toState,jdbcType=VARCHAR}, #{startActionId,jdbcType=INTEGER}, #{enable,jdbcType=TINYINT}, 
       #{msg,jdbcType=VARCHAR})
   </insert>
   <insert id="insertSelective" parameterType="com.cooler.ai.platform.entity.Policy" >
@@ -42,11 +48,20 @@
       <if test="policyName != null" >
         policy_name,
       </if>
-      <if test="intentName != null" >
-        intent_name,
+      <if test="domainName != null" >
+        domain_name,
       </if>
-      <if test="stateId != null" >
-        state_id,
+      <if test="taskName != null" >
+        task_name,
+      </if>
+      <if test="fromState != null" >
+        from_state,
+      </if>
+      <if test="intentNames != null" >
+        intent_names,
+      </if>
+      <if test="toState != null" >
+        to_state,
       </if>
       <if test="startActionId != null" >
         start_action_id,
@@ -65,11 +80,20 @@
       <if test="policyName != null" >
         #{policyName,jdbcType=VARCHAR},
       </if>
-      <if test="intentName != null" >
-        #{intentName,jdbcType=VARCHAR},
+      <if test="domainName != null" >
+        #{domainName,jdbcType=VARCHAR},
       </if>
-      <if test="stateId != null" >
-        #{stateId,jdbcType=INTEGER},
+      <if test="taskName != null" >
+        #{taskName,jdbcType=VARCHAR},
+      </if>
+      <if test="fromState != null" >
+        #{fromState,jdbcType=VARCHAR},
+      </if>
+      <if test="intentNames != null" >
+        #{intentNames,jdbcType=VARCHAR},
+      </if>
+      <if test="toState != null" >
+        #{toState,jdbcType=VARCHAR},
       </if>
       <if test="startActionId != null" >
         #{startActionId,jdbcType=INTEGER},
@@ -88,11 +112,20 @@
       <if test="policyName != null" >
         policy_name = #{policyName,jdbcType=VARCHAR},
       </if>
-      <if test="intentName != null" >
-        intent_name = #{intentName,jdbcType=VARCHAR},
+      <if test="domainName != null" >
+        domain_name = #{domainName,jdbcType=VARCHAR},
       </if>
-      <if test="stateId != null" >
-        state_id = #{stateId,jdbcType=INTEGER},
+      <if test="taskName != null" >
+        task_name = #{taskName,jdbcType=VARCHAR},
+      </if>
+      <if test="fromState != null" >
+        from_state = #{fromState,jdbcType=VARCHAR},
+      </if>
+      <if test="intentNames != null" >
+        intent_names = #{intentNames,jdbcType=VARCHAR},
+      </if>
+      <if test="toState != null" >
+        to_state = #{toState,jdbcType=VARCHAR},
       </if>
       <if test="startActionId != null" >
         start_action_id = #{startActionId,jdbcType=INTEGER},
@@ -109,8 +142,11 @@
   <update id="updateByPrimaryKey" parameterType="com.cooler.ai.platform.entity.Policy" >
     update policy
     set policy_name = #{policyName,jdbcType=VARCHAR},
-      intent_name = #{intentName,jdbcType=VARCHAR},
-      state_id = #{stateId,jdbcType=INTEGER},
+      domain_name = #{domainName,jdbcType=VARCHAR},
+      task_name = #{taskName,jdbcType=VARCHAR},
+      from_state = #{fromState,jdbcType=VARCHAR},
+      intent_names = #{intentNames,jdbcType=VARCHAR},
+      to_state = #{toState,jdbcType=VARCHAR},
       start_action_id = #{startActionId,jdbcType=INTEGER},
       enable = #{enable,jdbcType=TINYINT},
       msg = #{msg,jdbcType=VARCHAR}
@@ -125,4 +161,15 @@
     where state_id = #{stateId,jdbcType=INTEGER} and  enable = 1
   </select>
 
+
+  <select id="selectByFromToState" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from policy
+    where domain_name = #{domainName,jdbcType=VARCHAR}
+    and task_name = #{taskName,jdbcType=VARCHAR}
+    and from_state = #{fromState,jdbcType=VARCHAR}
+    and to_state = #{toState,jdbcType=VARCHAR}
+    and  enable = 1
+  </select>
 </mapper>

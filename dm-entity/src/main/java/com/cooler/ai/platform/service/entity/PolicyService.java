@@ -13,4 +13,6 @@ public interface PolicyService {
      * @return  策略集
      */
     List<Policy> selectByIntentStateId(String currentIntentName, Integer currentStateId);
+
+
 }

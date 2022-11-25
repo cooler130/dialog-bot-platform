@@ -140,6 +140,7 @@ public class Constant {
     //--------------------------------------------------------------------------动作类型
     public static final int PROCESSED_ACTION = 1;                               //处理动作
     public static final int INTERACTIVE_ACTION = 2;                             //交互动作
+    public static final int HTTP_ACTION = 3;                                    //http调用动作
 
     //--------------------------------------------------------------------------动作内部所使用到的数据类型
     public static final String BIZ_DATA = "bizData";                            //业务数据

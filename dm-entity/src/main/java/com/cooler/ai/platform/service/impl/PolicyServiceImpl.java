@@ -1,4 +1,4 @@
-package com.cooler.ai.platform.service.impl.entity;
+package com.cooler.ai.platform.service.impl;
 
 import com.cooler.ai.platform.dao.PolicyMapper;
 import com.cooler.ai.platform.entity.Policy;
@@ -32,4 +32,5 @@ public class PolicyServiceImpl implements PolicyService {
         }
         return targetPolicies;
     }
+
 }

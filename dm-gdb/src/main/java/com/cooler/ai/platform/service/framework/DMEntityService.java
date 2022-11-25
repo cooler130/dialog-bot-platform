@@ -1,6 +1,6 @@
 package com.cooler.ai.platform.service.framework;
 
-import com.cooler.ai.platform.entity.*;
+import com.cooler.ai.platform.entity2.*;
 
 import java.util.List;
 

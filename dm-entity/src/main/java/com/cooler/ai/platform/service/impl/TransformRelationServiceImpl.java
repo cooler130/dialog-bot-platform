@@ -1,4 +1,4 @@
-package com.cooler.ai.platform.service.impl.entity;
+package com.cooler.ai.platform.service.impl;
 
 import com.cooler.ai.platform.dao.TransformRelationMapper;
 import com.cooler.ai.platform.entity.TransformRelation;

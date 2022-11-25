@@ -35,6 +35,7 @@
         <module>distribution-server</module>
 
         <module>dm-entity</module>
+        <module>dm-entity2</module>
         <module>dm-protocol</module>
         <module>dm-gdb</module>
         <module>dm-tree</module>

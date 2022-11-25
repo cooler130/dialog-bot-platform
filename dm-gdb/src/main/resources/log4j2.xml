@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration status="warn">
+<configuration status="debug">
     <appenders>
         <Console name="Console" target="SYSTEM_OUT" follow="true">
             <PatternLayout pattern="%d{yyyy/MM/dd HH:mm:ss.SSS} %t [%p] %c{1} (%F:%L) %msg%n" />
@@ -34,7 +34,7 @@
 
     <loggers>
 
-        <root level="INFO">
+        <root level="DEBUG">
             <!--控制台输出推荐只在本地调试时使用，线上将该配置去掉-->
             <appender-ref ref="Console" />
             <appender-ref ref="XMDFileAppender" />

@@ -145,8 +145,6 @@ public class JSONMapMaker {
 			totalMap.put("Policy_" + stateId, JSON.toJSONString(policiesGroup));
 		}
 
-
-
 		//State:	按domainId和intentId查询集合；按Id查询单个
 		for (State state : states) {
 			totalMap.put("State_" + state.getId(), JSON.toJSONString(state));

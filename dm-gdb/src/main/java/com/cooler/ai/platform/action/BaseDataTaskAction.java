@@ -1,6 +1,6 @@
 package com.cooler.ai.platform.action;
 
-import com.cooler.ai.platform.entity.Transition;
+import com.cooler.ai.platform.entity2.Transition;
 import com.cooler.ai.platform.facade.constance.Constant;
 import com.cooler.ai.platform.facade.model.BizDataModelState;
 import com.cooler.ai.platform.facade.model.DMRequest;

@@ -367,7 +367,7 @@ public class PolicyProcessJsonServiceImpl implements PolicyProcessService {
             return runAction(dmRequest, dialogState, nextAction, bizDataMap);
         }
 
-        DMResponse dmResponse = new DMResponse(0, "fail", dialogState.getBotName(), dmRequest.getSessionId(), dmRequest.getDomainTaskData().getTotalTurnNum(), null, null, null, 0l, 0l);
+        DMResponse dmResponse = new DMResponse(0, "fail", dialogState.getBotName(), dmRequest.getSessionId(), dialogState.getTotalTurnNum(), null, null, null, 0l, 0l);
         return dmResponse;
 
     }

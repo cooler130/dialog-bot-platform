@@ -1,7 +1,7 @@
 package com.cooler.ai.platform.model;
 
-import com.cooler.ai.platform.entity.ConditionLogic;
-import com.cooler.ai.platform.entity.ConditionRule;
+import com.cooler.ai.platform.entity2.ConditionLogic;
+import com.cooler.ai.platform.entity2.ConditionRule;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
