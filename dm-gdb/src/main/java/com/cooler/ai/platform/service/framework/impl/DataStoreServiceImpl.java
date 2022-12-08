@@ -20,9 +20,6 @@ public class DataStoreServiceImpl implements DataStoreService {
     private Logger logger = LoggerFactory.getLogger(DataStoreServiceImpl.class);
 
     @Resource
-    private CacheService<DomainTaskData> cacheServiceTN;
-
-    @Resource
     private CacheService<DialogState> cacheService;
 
     @Resource
@@ -61,7 +58,7 @@ public class DataStoreServiceImpl implements DataStoreService {
                 bizDataModelStateMap.put(bizKey, bizDataMS);
             }
         }
-        System.out.println("\n---》可用与下一轮的各个业务数据 BIZ_DATA：" + JSON.toJSONString(bizDataModelStateMap));
+//        System.out.println("\n---》可用与下一轮的各个业务数据 BIZ_DATA：" + JSON.toJSONString(bizDataModelStateMap));
         String bizDataKey = sessionId + "_" + Constant.BIZ_DATA;       //业务数据（在各个Action执行后累积起来的业务数据，注意这个key里面没有domainName和taskId，也就是说每轮产生的业务数据跟领域和任务无关，就是说各类话题共享对话过程中产生的业务数据）
         cacheServiceBD.setContext(bizDataKey, bizDataModelStateMap);
     }
@@ -72,9 +69,9 @@ public class DataStoreServiceImpl implements DataStoreService {
         String dialogStateJS = JSON.toJSONString(dialogState);
         String bizDataMapJS = JSON.toJSONString(bizDataMap);
 
-        System.out.println("4.2.1.对话状态数据（DMRequest）：" + dmRequestJS);
-        System.out.println("4.2.2.对话状态数据（DialogState）：" + dialogStateJS);
-        System.out.println("4.2.3.业务数据（bizDataMap）" + bizDataMapJS);
+//        System.out.println("4.2.1.对话状态数据（DMRequest）：" + dmRequestJS);
+//        System.out.println("4.2.2.对话状态数据（DialogState）：" + dialogStateJS);
+//        System.out.println("4.2.3.业务数据（bizDataMap）" + bizDataMapJS);
 
         logger.debug("4.2.1.对话状态数据（DMRequest）：" + dmRequestJS);
         logger.debug("4.2.2.对话状态数据（DialogState）：" + dialogStateJS);

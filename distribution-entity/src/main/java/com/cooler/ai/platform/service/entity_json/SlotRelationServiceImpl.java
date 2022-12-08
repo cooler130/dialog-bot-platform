@@ -1,7 +1,6 @@
 package com.cooler.ai.platform.service.entity_json;
 
 import com.alibaba.fastjson.JSON;
-import com.cooler.ai.platform.EntityConstant;
 import com.cooler.ai.platform.entity.SlotRelation;
 import com.cooler.ai.platform.service.SlotRelationService;
 import org.springframework.stereotype.Service;

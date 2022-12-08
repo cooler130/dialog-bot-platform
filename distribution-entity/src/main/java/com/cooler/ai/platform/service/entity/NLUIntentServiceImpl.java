@@ -20,7 +20,12 @@ public class NLUIntentServiceImpl implements NLUIntentService {
     }
 
     @Override
-    public List<NLUIntent> selectByIntentName(String nluIntentName) {
-        return nluIntentMapper.selectByIntentName(nluIntentName);
+    public List<NLUIntent> selectByNluIntentName(String nluIntentName) {
+        return nluIntentMapper.selectByNluIntentName(nluIntentName);
     }
+
+    public List<NLUIntent> selectByIntentId(Integer intentId) {
+        return nluIntentMapper.selectByIntentId(intentId);
+    }
+
 }

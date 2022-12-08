@@ -7,9 +7,9 @@ import com.cooler.ai.platform.facade.constance.Constant;
 import com.cooler.ai.platform.facade.constance.PC;
 import com.cooler.ai.platform.facade.model.DMRequest;
 import com.cooler.ai.platform.facade.model.DialogState;
-import com.cooler.ai.platform.facade.model.DomainDesionData;
+import com.cooler.ai.platform.model.DomainDesionData;
 import com.cooler.ai.platform.entity.Intent;
-import com.cooler.ai.platform.facade.model.DomainTaskData;
+import com.cooler.ai.platform.model.DomainTaskData;
 import com.cooler.ai.platform.service.IntentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,27 +27,21 @@ public class NonLanguageStrategy {
         String sentence = dmRequest.getRequestType() + "类型数据";
 
         DialogState lastDialogState = null;
-        String targetLastFromStateIdStr = null;
         String targetLastFromState = null;
-        String targetFromStateIdStr = null;
         String targetFromState = null;
         if (historyDialogStates != null && historyDialogStates.size() > 0) {
             lastDialogState = historyDialogStates.get(0);
             if(lastDialogState != null){
-                targetLastFromStateIdStr = lastDialogState.getParamValue(PC.FROM_STATE_ID2, Constant.PLATFORM_PARAM);
                 targetLastFromState = lastDialogState.getParamValue(PC.FROM_STATE2, Constant.PLATFORM_PARAM);
-                targetFromStateIdStr = lastDialogState.getParamValue(PC.TO_STATE_ID, Constant.PLATFORM_PARAM);
                 targetFromState = lastDialogState.getParamValue(PC.TO_STATE, Constant.PLATFORM_PARAM);
             }
         }
-        Integer targetLastFromStateId = targetLastFromStateIdStr != null ? Integer.parseInt(targetLastFromStateIdStr) : EntityConstant.GLOBAL_START_ID;
-        Integer targetFromStateId = targetFromStateIdStr != null ? Integer.parseInt(targetFromStateIdStr) : EntityConstant.GLOBAL_START_ID;
         targetLastFromState = targetLastFromState != null ? targetLastFromState : EntityConstant.GLOBAL_START;
         targetFromState = targetFromState != null ? targetFromState : EntityConstant.GLOBAL_START;
 
         Map<String, String> extendInfo = dmRequest.getExtendInfo();
         if (extendInfo == null || extendInfo.size() == 0) {
-            logger.error("3.2.警告！进入动作处理分支，但metaData为null，故而进入兜底策略");
+            logger.error("3.2.警告！进入动作处理分支，但extendInfo为null，故而进入兜底策略");
             return new DomainDesionData(sessionId,
                     totalTurnNum,
                     sentence,
@@ -57,9 +51,7 @@ public class NonLanguageStrategy {
                     EntityConstant.NO_INTENT,
                     EntityConstant.NO_INTENT_ID,
                     EntityConstant.NO_TASK,
-                    targetLastFromStateId,
                     targetLastFromState,
-                    targetFromStateId,
                     targetFromState,
                     false,
                     null,
@@ -96,9 +88,7 @@ public class NonLanguageStrategy {
                             intentName,
                             targetIntentId,
                             taskName,
-                            targetLastFromStateId,
                             targetLastFromState,
-                            targetFromStateId,
                             targetFromState,
                             finalSameDomain,
                             null,
@@ -123,9 +113,7 @@ public class NonLanguageStrategy {
                     intentName,
                     EntityConstant.NO_INTENT_ID,
                     taskName,
-                    targetLastFromStateId,
                     targetLastFromState,
-                    targetFromStateId,
                     targetFromState,
                     false,
                     null,

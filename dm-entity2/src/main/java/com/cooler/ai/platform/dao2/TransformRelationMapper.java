@@ -7,6 +7,5 @@ import java.util.List;
 
 public interface TransformRelationMapper {
 
-    List<TransformRelation> selectByContextStateId(@Param("contextStateId") Integer contextStateId);
-
+    List<TransformRelation> selectByDTS(@Param("domainName") String domainName, @Param("taskName") String taskName, @Param("contextState") String contextState);
 }

@@ -1,6 +1,7 @@
 package com.cooler.ai.platform.client.model;
 
 import com.alibaba.fastjson.JSON;
+import com.cooler.ai.platform.EntityConstant;
 import com.cooler.ai.platform.facade.constance.Constant;
 import com.cooler.ai.platform.facade.constance.PC;
 import com.cooler.ai.platform.facade.model.*;
@@ -24,13 +25,13 @@ public class UtilBean {
     public static String checkQueryType(String query){
         String queryType = null;
         if(query.startsWith("signal")){
-            queryType = Constant.QUERYTYPE_SIGNAL;
+            queryType = EntityConstant.QUERYTYPE_SIGNAL;
         }else if(query.startsWith("action")){
-            queryType = Constant.QUERYTYPE_ACTION;
+            queryType = EntityConstant.QUERYTYPE_ACTION;
         }else if(query.startsWith("transform_intent")){
-            queryType = Constant.QUERYTYPE_TRANSFORM_INTENT;
+            queryType = EntityConstant.QUERYTYPE_TRANSFORM_INTENT;
         }else{
-            queryType = Constant.QUERYTYPE_TEXT;
+            queryType = EntityConstant.QUERYTYPE_TEXT;
         }
         return queryType;
     }
@@ -70,36 +71,15 @@ public class UtilBean {
         dmRequest.setExtendInfo(new HashMap<>());
 
         dmRequest.setRequestType(queryType);
-        if(Constant.LANGUAGE_QUERYTYPES.contains(queryType)){
-            NLUData nluData = nluParse(query);                              //query形式要为NluMockData中存在的句子
-            dmRequest.setNluData(nluData);
-        }else if(Constant.NON_LANGUAGE_QUERYTYPES.contains(queryType)){
+        if(EntityConstant.LANGUAGE_QUERYTYPES.contains(queryType)){
+            dmRequest.setQuery(query);
+        }else if(EntityConstant.NON_LANGUAGE_QUERYTYPES.contains(queryType)){
+            dmRequest.setQuery(queryType + " 型数据");
             query = query.replace(queryType + "->", "");   //query形式为    signal:testcase|no_intent|2|signal:init@slotName1:slotValue1@slotName2:slotValue2
             Map<String, String> metaMap = createMetaMap(query);
             dmRequest.setExtendInfo(metaMap);
         }
         return dmRequest;
-    }
-
-    /**
-     * 通过query构建NLUData（语言交互）
-     * @param query
-     * @return
-     */
-    public static NLUData nluParse(String query){
-        if(query.trim().equals("")) return null;
-        NLUData nluData = new NLUData();
-        List<DomainInfo> domainInfos = new ArrayList<>();
-        DomainInfo domainInfo = NluMockData.nluMockMap.get(query);
-
-        if(domainInfo != null) {
-            domainInfos.add(domainInfo);
-            nluData.setResult(domainInfos);
-            return nluData;
-        }else{
-            logger.error("没有相关的nlu数据！");
-        }
-        return null;
     }
 
     /**

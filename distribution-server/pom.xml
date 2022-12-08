@@ -31,6 +31,13 @@
             <version>${parent.version}</version>
         </dependency>
 
+        <!-- 依赖的数据NLU -->
+        <dependency>
+            <groupId>com.cooler.ai</groupId>
+            <artifactId>nlu-data-protocol</artifactId>
+            <version>2.0-SNAPSHOT</version>
+        </dependency>
+
         <!--spring-boot相关，当前需要加入dubbo、aop、redis、jdbc，其它模块视情况加入-->
         <dependency>
             <groupId>com.alibaba.spring.boot</groupId>
@@ -91,6 +98,17 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.4</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.4.10</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.7</version>
         </dependency>
 
     </dependencies>

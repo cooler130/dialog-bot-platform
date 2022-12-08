@@ -9,5 +9,8 @@ public interface NLUIntentMapper {
 
     NLUIntent selectByTwoNames(@Param("nluIntentName") String nluIntentName, @Param("nluDomainName") String nluDomainName);
 
-    List<NLUIntent> selectByIntentName(@Param("nluIntentName") String nluIntentName);
+    List<NLUIntent> selectByNluIntentName(@Param("nluIntentName") String nluIntentName);
+
+    List<NLUIntent> selectByIntentId(@Param("intentId") Integer intentId);
+
 }

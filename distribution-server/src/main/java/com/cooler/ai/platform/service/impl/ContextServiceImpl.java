@@ -1,9 +1,11 @@
 package com.cooler.ai.platform.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.cooler.ai.platform.EntityConstant;
 import com.cooler.ai.platform.facade.constance.Constant;
 import com.cooler.ai.platform.facade.constance.PC;
 import com.cooler.ai.platform.facade.model.*;
+import com.cooler.ai.platform.model.DomainTaskData;
 import com.cooler.ai.platform.service.CacheService;
 import com.cooler.ai.platform.service.ContextService;
 import org.slf4j.Logger;
@@ -47,20 +49,20 @@ public class ContextServiceImpl implements ContextService {
         //2.获取"领域-任务"单元下的轮次，组合成获取上下文的key，如果是非语言请求类型，则前端埋点已经埋好了领域、任务名称，如果是语言请求类型，则需要组合出多个key
         List<String> historyKeys = new ArrayList<>();
         String queryType = dmRequest.getRequestType();
-        if(Constant.NON_LANGUAGE_QUERYTYPES.contains(queryType)){
+        if(EntityConstant.NON_LANGUAGE_QUERYTYPES.contains(queryType)){
             Map<String, String> extendInfo = dmRequest.getExtendInfo();
             String domainName = extendInfo.get(PC.DOMAIN_NAME);    //能从这里取出domain和task的名称，需要前端预埋好这两个信息到request的extendInfo中
             String taskName = extendInfo.get(PC.TASK_NAME);
             int taskTurnNum = domainTaskData.getTaskTurnNum(domainName, taskName);
             historyKeys.add(sessionId + "_" + domainName + "::" + taskName + "_" + taskTurnNum + "_" + Constant.DIALOG_STATE);
-        }else if(Constant.LANGUAGE_QUERYTYPES.contains(queryType)){
+        }else if(EntityConstant.LANGUAGE_QUERYTYPES.contains(queryType)){
             Map<String, DomainTaskData.DomainData> domainDataMap = domainTaskData.getDomainDataMap();
             for (String domainName : domainDataMap.keySet()) {
                 DomainTaskData.DomainData domainData = domainDataMap.get(domainName);
                 Map<String, DomainTaskData.TaskData> taskDataMap = domainData.getTaskDataMap();
                 for (String taskName : taskDataMap.keySet()) {
                     int taskTurnNum = domainTaskData.getTaskTurnNum(domainName, taskName);
-                    historyKeys.add(sessionId + "_" + domainName + "::" + taskName + "_" + taskTurnNum + "_" + Constant.DIALOG_STATE);
+                    historyKeys.add(sessionId + "_" + domainName + "::" + taskName + "_" + taskTurnNum + "_" + Constant.DIALOG_STATE); //获取的是每一个domain_task的最后一轮DS数据
                 }
             }
 

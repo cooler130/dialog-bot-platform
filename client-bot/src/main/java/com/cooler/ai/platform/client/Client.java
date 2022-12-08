@@ -1,60 +1,40 @@
 package com.cooler.ai.platform.client;
 
+import com.alibaba.fastjson.JSON;
+import com.cooler.ai.platform.EntityConstant;
 import com.cooler.ai.platform.client.model.UtilBean;
 import com.cooler.ai.platform.client.testcase.BuRouter;
-import com.cooler.ai.platform.client.testcase.Callout;
-import com.cooler.ai.platform.client.testcase.Waimai;
 import com.cooler.ai.platform.facade.DistributionCenterFacade;
 import com.cooler.ai.platform.facade.constance.Constant;
 import com.cooler.ai.platform.facade.model.DMRequest;
 import com.cooler.ai.platform.facade.model.DMResponse;
 import com.cooler.ai.platform.facade.model.Message;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.*;
 
 public class Client {
-    private static final Logger logger = LoggerFactory.getLogger(Client.class);
     private static DistributionCenterFacade distributionCenterFacade;
 
     private static String selectBot = "burouter2";
 
     public static void main(String args[]){
+
         String dmType = null;
         String initQuery = null;
-        Map<String, String[]> querysGroup = null;
+        Map<String, String[]> answersGroup = null;
         switch (selectBot){
-            case "waimai" : {
-                dmType = Constant.MODEL_RDB;
-                initQuery = "signal->waimai|no_intent|shopping|#signal#:init";
-                querysGroup = Waimai.querysGroup;
-                break;
-            }
-            case "callout" : {
-                dmType = Constant.MODEL_RDB;
-                initQuery = "signal->callout|no_intent|surveys|#signal#:init";
-                querysGroup = Callout.querysGroup;
-                break;
-            }
-            case "burouter" : {
-                dmType = Constant.MODEL_RDB;
-                initQuery = "signal->burouter|no_intent|bu_route|#signal#:init";
-                querysGroup = BuRouter.querysGroup;
-                break;
-            }
             case "burouter2" : {
                 dmType = Constant.MODEL_GDB;
-                initQuery = "signal->burouter2|no_intent|bu_route2|#signal#:init";
-                querysGroup = BuRouter.querysGroup;
+                initQuery = "signal->burouter2|no_intent|bu_route2|signal:init";
+                answersGroup = BuRouter.answersGroup;
                 break;
             }
         }
 
 //        humanTest(args, dmType, initQuery);
-        scriptTest(dmType, initQuery, querysGroup);
+        scriptTest(dmType, initQuery, answersGroup);
     }
 
     public static void humanTest(String args[], String dmType, String initQuery){
@@ -65,7 +45,7 @@ public class Client {
         String signal = "init";
         String sessionId = "SID_TEST_" + System.currentTimeMillis();
         System.out.println("0 ---->驱动信号：" + signal);
-        DMRequest dmRequest = UtilBean.createDmRequest(sessionId, dmType, Constant.QUERYTYPE_SIGNAL, initQuery);    //信号init驱动，产生欢迎语
+        DMRequest dmRequest = UtilBean.createDmRequest(sessionId, dmType, EntityConstant.QUERYTYPE_SIGNAL, initQuery);    //信号init驱动，产生欢迎语
         DMResponse dmResponse = distributionCenterFacade.distributeProcess(dmRequest);
         String query = "";
 
@@ -106,20 +86,20 @@ public class Client {
 
     }
 
-    public static void scriptTest(String dmType, String initQuery, Map<String, String[]> querysGroup) {
+    public static void scriptTest(String dmType, String initQuery, Map<String, String[]> answersGroup) {
         BeanFactory beanFactory = new ClassPathXmlApplicationContext("client.xml");
         distributionCenterFacade = (DistributionCenterFacade) beanFactory.getBean("distributionCenterFacade");
 
         String sessionId = null;
-        Set<String> groupKeys = querysGroup.keySet();
+        Set<String> groupKeys = answersGroup.keySet();
         int j = 1;
         for (String groupKey : groupKeys) {
-            String[] answers = querysGroup.get(groupKey);
+            String[] answers = answersGroup.get(groupKey);
             System.out.println("\n开始第 " + (j ++) + " 组 -------------------" + groupKey);
             sessionId = "SID_TEST_" + System.currentTimeMillis();                                                                //变动的sessionID，使组之间不继承上下文。
 
             //准备一个带有init信号的DmRequest。
-            DMRequest dmRequest = UtilBean.createDmRequest(sessionId, dmType, Constant.QUERYTYPE_SIGNAL, initQuery);    //信号驱动，产生欢迎语
+            DMRequest dmRequest = UtilBean.createDmRequest(sessionId, dmType, EntityConstant.QUERYTYPE_SIGNAL, initQuery);    //信号驱动，产生欢迎语
             DMResponse dmResponse = null;
             System.out.println("0 ---->驱动信号：init");
 
@@ -155,8 +135,6 @@ public class Client {
                 System.out.println();
             }
         }
-
-//        System.exit(0);
     }
 
 }

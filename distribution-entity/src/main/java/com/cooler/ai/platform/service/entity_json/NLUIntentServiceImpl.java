@@ -1,7 +1,6 @@
 package com.cooler.ai.platform.service.entity_json;
 
 import com.alibaba.fastjson.JSONObject;
-import com.cooler.ai.platform.EntityConstant;
 import com.cooler.ai.platform.entity.NLUIntent;
 import com.cooler.ai.platform.service.NLUIntentService;
 import org.springframework.stereotype.Service;
@@ -25,9 +24,19 @@ public class NLUIntentServiceImpl implements NLUIntentService {
     }
 
     @Override
-    public List<NLUIntent> selectByIntentName(String nluIntentName) {
+    public List<NLUIntent> selectByNluIntentName(String nluIntentName) {
         List<NLUIntent> nluIntents = null;
         String json = globalMap.get("NLUIntent_" + nluIntentName);
+        if(json != null){
+            nluIntents = JSONObject.parseArray(json, NLUIntent.class);
+        }
+        return nluIntents;
+    }
+
+    @Override
+    public List<NLUIntent> selectByIntentId(Integer intentId) {
+        List<NLUIntent> nluIntents = null;
+        String json = globalMap.get("NLUIntent_" + intentId);
         if(json != null){
             nluIntents = JSONObject.parseArray(json, NLUIntent.class);
         }

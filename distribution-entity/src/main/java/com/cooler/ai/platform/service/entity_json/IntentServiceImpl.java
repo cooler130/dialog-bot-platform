@@ -1,7 +1,6 @@
 package com.cooler.ai.platform.service.entity_json;
 
 import com.alibaba.fastjson.JSONObject;
-import com.cooler.ai.platform.EntityConstant;
 import com.cooler.ai.platform.entity.Intent;
 import com.cooler.ai.platform.service.IntentService;
 import org.springframework.stereotype.Service;

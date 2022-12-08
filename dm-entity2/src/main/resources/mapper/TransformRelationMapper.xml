@@ -5,16 +5,18 @@
     <constructor >
       <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
       <arg column="transform_relation_name" jdbcType="VARCHAR" javaType="java.lang.String" />
-      <arg column="context_state_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
-      <arg column="context_intent_names" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="domain_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="task_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="context_state" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="intent_names" jdbcType="VARCHAR" javaType="java.lang.String" />
       <arg column="transform_intent_name" jdbcType="VARCHAR" javaType="java.lang.String" />
       <arg column="enable" jdbcType="TINYINT" javaType="java.lang.Byte" />
       <arg column="msg" jdbcType="VARCHAR" javaType="java.lang.String" />
     </constructor>
   </resultMap>
   <sql id="Base_Column_List" >
-    id, transform_relation_name, context_state_id, context_intent_names, transform_intent_name, 
-    enable, msg
+    id, transform_relation_name, domain_name, task_name, context_state, intent_names, 
+    transform_intent_name, enable, msg
   </sql>
   <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
     select 
@@ -27,12 +29,14 @@
     where id = #{id,jdbcType=INTEGER}
   </delete>
   <insert id="insert" parameterType="com.cooler.ai.platform.entity2.TransformRelation" >
-    insert into transform_relation (id, transform_relation_name, context_state_id, 
-      context_intent_names, transform_intent_name, 
-      enable, msg)
-    values (#{id,jdbcType=INTEGER}, #{transformRelationName,jdbcType=VARCHAR}, #{contextStateId,jdbcType=INTEGER}, 
-      #{contextIntentNames,jdbcType=VARCHAR}, #{transformIntentName,jdbcType=VARCHAR}, 
-      #{enable,jdbcType=TINYINT}, #{msg,jdbcType=VARCHAR})
+    insert into transform_relation (id, transform_relation_name, domain_name, 
+      task_name, context_state, intent_names, 
+      transform_intent_name, enable, msg
+      )
+    values (#{id,jdbcType=INTEGER}, #{transformRelationName,jdbcType=VARCHAR}, #{domainName,jdbcType=VARCHAR}, 
+      #{taskName,jdbcType=VARCHAR}, #{contextState,jdbcType=VARCHAR}, #{intentNames,jdbcType=VARCHAR}, 
+      #{transformIntentName,jdbcType=VARCHAR}, #{enable,jdbcType=TINYINT}, #{msg,jdbcType=VARCHAR}
+      )
   </insert>
   <insert id="insertSelective" parameterType="com.cooler.ai.platform.entity2.TransformRelation" >
     insert into transform_relation
@@ -43,11 +47,17 @@
       <if test="transformRelationName != null" >
         transform_relation_name,
       </if>
-      <if test="contextStateId != null" >
-        context_state_id,
+      <if test="domainName != null" >
+        domain_name,
       </if>
-      <if test="contextIntentNames != null" >
-        context_intent_names,
+      <if test="taskName != null" >
+        task_name,
+      </if>
+      <if test="contextState != null" >
+        context_state,
+      </if>
+      <if test="intentNames != null" >
+        intent_names,
       </if>
       <if test="transformIntentName != null" >
         transform_intent_name,
@@ -66,11 +76,17 @@
       <if test="transformRelationName != null" >
         #{transformRelationName,jdbcType=VARCHAR},
       </if>
-      <if test="contextStateId != null" >
-        #{contextStateId,jdbcType=INTEGER},
+      <if test="domainName != null" >
+        #{domainName,jdbcType=VARCHAR},
       </if>
-      <if test="contextIntentNames != null" >
-        #{contextIntentNames,jdbcType=VARCHAR},
+      <if test="taskName != null" >
+        #{taskName,jdbcType=VARCHAR},
+      </if>
+      <if test="contextState != null" >
+        #{contextState,jdbcType=VARCHAR},
+      </if>
+      <if test="intentNames != null" >
+        #{intentNames,jdbcType=VARCHAR},
       </if>
       <if test="transformIntentName != null" >
         #{transformIntentName,jdbcType=VARCHAR},
@@ -89,11 +105,17 @@
       <if test="transformRelationName != null" >
         transform_relation_name = #{transformRelationName,jdbcType=VARCHAR},
       </if>
-      <if test="contextStateId != null" >
-        context_state_id = #{contextStateId,jdbcType=INTEGER},
+      <if test="domainName != null" >
+        domain_name = #{domainName,jdbcType=VARCHAR},
       </if>
-      <if test="contextIntentNames != null" >
-        context_intent_names = #{contextIntentNames,jdbcType=VARCHAR},
+      <if test="taskName != null" >
+        task_name = #{taskName,jdbcType=VARCHAR},
+      </if>
+      <if test="contextState != null" >
+        context_state = #{contextState,jdbcType=VARCHAR},
+      </if>
+      <if test="intentNames != null" >
+        intent_names = #{intentNames,jdbcType=VARCHAR},
       </if>
       <if test="transformIntentName != null" >
         transform_intent_name = #{transformIntentName,jdbcType=VARCHAR},
@@ -110,21 +132,24 @@
   <update id="updateByPrimaryKey" parameterType="com.cooler.ai.platform.entity2.TransformRelation" >
     update transform_relation
     set transform_relation_name = #{transformRelationName,jdbcType=VARCHAR},
-      context_state_id = #{contextStateId,jdbcType=INTEGER},
-      context_intent_names = #{contextIntentNames,jdbcType=VARCHAR},
+      domain_name = #{domainName,jdbcType=VARCHAR},
+      task_name = #{taskName,jdbcType=VARCHAR},
+      context_state = #{contextState,jdbcType=VARCHAR},
+      intent_names = #{intentNames,jdbcType=VARCHAR},
       transform_intent_name = #{transformIntentName,jdbcType=VARCHAR},
       enable = #{enable,jdbcType=TINYINT},
       msg = #{msg,jdbcType=VARCHAR}
     where id = #{id,jdbcType=INTEGER}
   </update>
 
-  <!-- 业务相关 -->
-  <!-- state_id = 4，是global_any的状态，代表任意状态 -->
-  <select id="selectByContextStateId" resultMap="BaseResultMap"  >
+  <!-- 业务 -->
+  <select id="selectByDTS" resultMap="BaseResultMap"  >
     select
     <include refid="Base_Column_List" />
     from transform_relation
-    where enable = 1 and (context_state_id = #{contextStateId,jdbcType=INTEGER} or context_state_id = 4)
+    where enable = 1
+    and domain_name = #{domainName,jdbcType=VARCHAR}
+    and task_name = #{taskName,jdbcType=VARCHAR}
+    and (context_state = #{contextState,jdbcType=VARCHAR} or context_state = 'global_any')
   </select>
-
 </mapper>

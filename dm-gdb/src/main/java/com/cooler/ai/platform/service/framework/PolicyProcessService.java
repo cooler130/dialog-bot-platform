@@ -1,6 +1,6 @@
 package com.cooler.ai.platform.service.framework;
 
-import com.cooler.ai.platform.entity2.Action;
+import com.cooler.ai.platform.entity2.PolicyAction;
 import com.cooler.ai.platform.facade.model.BizDataModelState;
 import com.cooler.ai.platform.facade.model.DMRequest;
 import com.cooler.ai.platform.facade.model.DMResponse;
@@ -16,7 +16,7 @@ public interface PolicyProcessService {
      * @param dialogState    DM结构体
      * @return  起始动作
      */
-    List<Action> queryPolicy(DialogState dialogState);
+    List<PolicyAction> queryPolicy(DialogState dialogState);
 
     /**
      * 执行处理动作
@@ -24,7 +24,7 @@ public interface PolicyProcessService {
      * @param actions   动作集
      * @return  处理动作输出的数据
      */
-    DMResponse runActions(DMRequest dmRequest, DialogState dialogState, List<Action> actions, Map<String, BizDataModelState<String>> bizDataMap);
+    DMResponse runActions(DialogState dialogState, List<PolicyAction> actions);
 
 
 }

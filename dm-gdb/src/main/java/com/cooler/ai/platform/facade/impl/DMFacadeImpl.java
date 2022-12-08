@@ -1,6 +1,6 @@
 package com.cooler.ai.platform.facade.impl;
 
-import com.cooler.ai.platform.entity2.Action;
+import com.cooler.ai.platform.entity2.PolicyAction;
 import com.cooler.ai.platform.facade.model.*;
 import com.cooler.ai.platform.service.framework.*;
 import com.cooler.ai.platform.facade.DMFacade;
@@ -16,22 +16,22 @@ public class DMFacadeImpl implements DMFacade {
 
     @Qualifier("gdbDstService")
     @Autowired
-    private DSTService dstService;                                                                                      //3.有限状态机服务
+    private DSTService dstService;
 
     @Qualifier("policyProcessService")
     @Autowired
-    private PolicyProcessService policyProcessService;                                                                  //4.动作选择、执行服务（两个版本：db版和json版）
+    private PolicyProcessService policyProcessService;
 
     @Autowired
-    private DataStoreService dataStoreService;                                                                          //5.数据保存服务
+    private DataStoreService dataStoreService;
 
     @Override
     public DMResponse process(DMRequest dmRequest, DialogState dialogState, Map<String, BizDataModelState<String>> bizDataMSMap) {
         long startTimeStamp = System.currentTimeMillis();
 
-        dstService.fsmDSTProcess(dmRequest, dialogState, bizDataMSMap);
-        List<Action> actions = policyProcessService.queryPolicy(dialogState);
-        DMResponse dmResponse = policyProcessService.runActions(dmRequest, dialogState, actions, bizDataMSMap);
+        dstService.fsmDSTProcess(dialogState);
+        List<PolicyAction> actions = policyProcessService.queryPolicy(dialogState);
+        DMResponse dmResponse = policyProcessService.runActions(dialogState, actions);
         dataStoreService.storeData(dmRequest, dialogState, bizDataMSMap);
 
         long endTimeStamp = System.currentTimeMillis();

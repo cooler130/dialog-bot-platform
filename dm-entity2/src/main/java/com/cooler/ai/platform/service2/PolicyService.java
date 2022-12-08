@@ -7,14 +7,6 @@ import java.util.List;
 public interface PolicyService {
 
     /**
-     * 根据状态ID查询策略集
-     * @param currentIntentName
-     * @param currentStateId
-     * @return  策略集
-     */
-    List<Policy> selectByIntentStateId(String currentIntentName, Integer currentStateId);
-
-    /**
      * 根据众多参数查询出策略集合
      * @param domainName
      * @param taskName

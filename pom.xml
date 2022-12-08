@@ -25,21 +25,16 @@
     </properties>
 
     <modules>
-        <module>bot-burouter</module>
+
         <module>bot-burouter2</module>
-        <module>bot-callout</module>
-        <module>bot-waimai</module>
 
         <module>distribution-entity</module>
         <module>distribution-protocol</module>
         <module>distribution-server</module>
 
-        <module>dm-entity</module>
         <module>dm-entity2</module>
         <module>dm-protocol</module>
         <module>dm-gdb</module>
-        <module>dm-tree</module>
-        <module>dm-rdb</module>
 
         <module>client-biz</module>
         <module>client-bot</module>

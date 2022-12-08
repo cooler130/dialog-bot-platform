@@ -14,10 +14,4 @@ public class CC {
     public static final String USER_ID = "user_id";
     public static final String USER_NAME = "user_name";
 
-    public static final String[] CUSTOM_PARAMS = {
-            SESSION_ID, TURN_NUM, QUERY_TYPE, CLIENT_ID, CHANNEL,
-            CLIENT_NAME, CLIENT_TYPE, CITY_NAME, USER_ID, USER_NAME
-    };
-
-
 }

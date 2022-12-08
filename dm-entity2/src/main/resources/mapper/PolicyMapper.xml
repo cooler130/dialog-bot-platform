@@ -142,15 +142,7 @@
     where id = #{id,jdbcType=INTEGER}
   </update>
 
-  <!-- 业务相关 -->
-  <select id="selectByStateId" resultMap="BaseResultMap">
-    select
-    <include refid="Base_Column_List" />
-    from policy
-    where state_id = #{stateId,jdbcType=INTEGER} and  enable = 1
-  </select>
-
-
+  <!-- 业务 -->
   <select id="selectByFromToState" resultMap="BaseResultMap">
     select
     <include refid="Base_Column_List" />

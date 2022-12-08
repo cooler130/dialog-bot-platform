@@ -18,5 +18,12 @@ public interface NLUIntentService {
      * @param nluIntentName
      * @return
      */
-    List<NLUIntent> selectByIntentName(String nluIntentName);
+    List<NLUIntent> selectByNluIntentName(String nluIntentName);
+
+    /**
+     * 根据intentId查询对应的NLUIntent集合
+     * @param intentId
+     * @return
+     */
+    List<NLUIntent> selectByIntentId(Integer intentId);
 }

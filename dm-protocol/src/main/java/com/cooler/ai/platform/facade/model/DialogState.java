@@ -91,36 +91,21 @@ public class DialogState implements Serializable{
     }
 
     /**
-     * 此方法的key已经带上了各类参数的标示，所以可以直接加入到PARAM_VALUE_MAP中
-     * @param key
-     * @param value
-     */
-    public void addToParamValueMapDirectly(String key, String value){
-        ModelState<Map<String, String>> slotValueMapMS = modelStateMap.get(Constant.PARAM_VALUE_MAP);
-        if(slotValueMapMS == null){
-            slotValueMapMS = new BaseModelState<>();
-            slotValueMapMS.setT(new HashMap<String, String>());
-        }
-        Map<String, String> slotValueMap = slotValueMapMS.getT();
-        slotValueMap.put(key, value);
-    }
-
-    /**
      * 此方法的key没有带上各类参数的标示，加入时根据paramType来判断类型，key做一些处理
      * @param key
      * @param value
      * @param paramType
      */
-    public void addToParamValueMap(String key, String value, int paramType){
+    public void addToParamValueMap(String key, String value, String paramType){
         ModelState<Map<String, String>> slotValueMapMS = modelStateMap.get(Constant.PARAM_VALUE_MAP);
         if(slotValueMapMS == null){
             slotValueMapMS = new BaseModelState<>();
-            slotValueMapMS.setT(new HashMap<String, String>());
+            slotValueMapMS.setT(new HashMap<>());
         }
         Map<String, String> slotValueMap = slotValueMapMS.getT();
         switch (paramType){
             case Constant.SLOT_PARAM : {
-                slotValueMap.put(key, value);
+                slotValueMap.put("@" + key + "@", value);
                 break;
             }
             case Constant.CUSTOM_PARAM : {
@@ -136,122 +121,64 @@ public class DialogState implements Serializable{
                 break;
             }
             default:{
-                slotValueMap.put(key, value);
-            }
-        }
-    }
-
-    public String getParamValue(String key, int paramType){
-        ModelState<Map<String, String>> slotValueMapMS = modelStateMap.get(Constant.PARAM_VALUE_MAP);
-        if(slotValueMapMS == null){
-            slotValueMapMS = new BaseModelState<>();
-            slotValueMapMS.setT(new HashMap<String, String>());
-            modelStateMap.put(Constant.PARAM_VALUE_MAP, slotValueMapMS);
-            return null;
-        }
-        Map<String, String> slotValueMap = slotValueMapMS.getT();
-        switch (paramType){
-            case Constant.SLOT_PARAM : {
-                return slotValueMap.get(key);
-            }
-            case Constant.CUSTOM_PARAM : {
-                return slotValueMap.get("#" + key + "#");
-            }
-            case Constant.PLATFORM_PARAM: {
-                return slotValueMap.get("$" + key + "$");
-            }
-            case Constant.BIZ_PARAM: {
-                return slotValueMap.get("%" + key + "%");
-            }
-            case Constant.SLOT_BIZ_PARAM: {
-                String slotValue = slotValueMap.get(key);
-                return (slotValue != null) ? slotValue : slotValueMap.get("%" + key + "%");
-            }
-            case Constant.BIZ_SLOT_PARAM: {
-                String bizValue = slotValueMap.get("%" + key + "%");
-                return (bizValue != null) ? bizValue : slotValueMap.get(key);
-            }
-            default:{
-                String value = slotValueMap.get(key);
-                if(value == null){
-                    value = slotValueMap.get("%" + key + "%");
-                }
-                if(value == null){
-                    value = slotValueMap.get("#" + key + "#");
-                }
-                if(value == null){
-                    value = slotValueMap.get("$" + key + "$");
-                }
-                return value;
+                slotValueMap.put("%" + key + "%", value);                   //默认是设置为业务变量
             }
         }
     }
 
     /**
-     * 从槽位值集、合成值集中取得某个key下的值，如果没有取到，则返回默认值defaultValue
-     * @param key           查询key
-     * @param defaultValue  默认值
+     * 从dialogState中的 PARAM_VALUE_MAP 中取出指定类型的值
+     * @param key
+     * @param paramType
      * @return
      */
-    public String getParamValueOrDefault(String key, int paramType, String defaultValue){
-        String value = getParamValue(key, paramType);
-        if(value == null){
-            value = defaultValue;
-        }
-        return value;
-    }
-
-    public String getParamValueOfGDB(String key, String paramType) {
+    public String getParamValue(String key, String paramType) {
         ModelState<Map<String, String>> slotValueMapMS = modelStateMap.get(Constant.PARAM_VALUE_MAP);
         if(slotValueMapMS == null){
             slotValueMapMS = new BaseModelState<>();
-            slotValueMapMS.setT(new HashMap<String, String>());
+            slotValueMapMS.setT(new HashMap<>());
             modelStateMap.put(Constant.PARAM_VALUE_MAP, slotValueMapMS);
             return null;
         }
         Map<String, String> slotValueMap = slotValueMapMS.getT();
-        switch (paramType) {
-            case Constant.SLOT_TYPE: {
-                return slotValueMap.get(key);
-            }
-            case Constant.CUSTOM_TYPE: {
-                return slotValueMap.get("#" + key + "#");
-            }
-            case Constant.PLATFORM_TYPE: {
-                return slotValueMap.get("$" + key + "$");
-            }
-            case Constant.BIZ_TYPE: {
-                return slotValueMap.get("%" + key + "%");
-            }
-            case Constant.SLOT_BIZ_TYPE: {
-                String slotValue = slotValueMap.get(key);
-                return (slotValue != null) ? slotValue : slotValueMap.get("%" + key + "%");
-            }
-            case Constant.BIZ_SLOT_TYPE: {
-                String bizValue = slotValueMap.get("%" + key + "%");
-                return (bizValue != null) ? bizValue : slotValueMap.get(key);
-            }
-            default: {
-                String value = slotValueMap.get(key);
-                if (value == null) {
-                    value = slotValueMap.get("%" + key + "%");
-                }
-                if (value == null) {
-                    value = slotValueMap.get("#" + key + "#");
-                }
-                if (value == null) {
-                    value = slotValueMap.get("$" + key + "$");
-                }
-                return value;
-            }
-        }
+        return getParamValueOfAMap(key, paramType, slotValueMap);
     }
 
-    public String getParamValueOrDefaultOfGDB(String key, String paramType, String defaultValue){
-        String value = getParamValueOfGDB(key, paramType);
-        if(value == null){
-            value = defaultValue;
+    /**
+     * 从指定Map中取出指定类型的值
+     * @param key
+     * @param paramType
+     * @param paramMap
+     * @return
+     */
+    public String getParamValueOfAMap(String key, String paramType, Map<String, String> paramMap) {
+        if(paramMap == null) return null;
+        switch (paramType) {
+            case Constant.SLOT_PARAM: {
+                return paramMap.get("@" + key + "@");
+            }
+            case Constant.CUSTOM_PARAM: {
+                return paramMap.get("#" + key + "#");
+            }
+            case Constant.PLATFORM_PARAM: {
+                return paramMap.get("$" + key + "$");
+            }
+            case Constant.BIZ_PARAM: {
+                return paramMap.get("%" + key + "%");
+            }
+            default: {
+                String value = paramMap.get("@" + key + "@");
+                if (value == null) {
+                    value = paramMap.get("%" + key + "%");
+                }
+                if (value == null) {
+                    value = paramMap.get("#" + key + "#");
+                }
+                if (value == null) {
+                    value = paramMap.get("$" + key + "$");
+                }
+                return value + "";
+            }
         }
-        return value;
     }
 }

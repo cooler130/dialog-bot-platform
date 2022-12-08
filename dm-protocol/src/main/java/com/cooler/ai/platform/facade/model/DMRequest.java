@@ -20,7 +20,6 @@ public class DMRequest implements Serializable {
 
     private String requestType;                     //请求类型（语音/文本请求类型；点击请求类型；）
     private String query;                           //请求的语句（如果是语音/文本请求类型）
-    private NLUData nluData;                        //解析query解析得到的nlu结构体
     private Map<String, String> extendInfo;         //扩展信息（各类扩展变量可以放到里面）
 
 }

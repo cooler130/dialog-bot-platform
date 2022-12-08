@@ -4,6 +4,6 @@ import com.cooler.ai.platform.entity2.TransformRelation;
 
 public interface TransformRelationService {
 
-    TransformRelation selectByContextStateIdIntent(Integer contextStateId, String contextIntentName);
+    TransformRelation selectTransformIntent(String domainName, String taskName, String contextState, String intentName);
 
 }

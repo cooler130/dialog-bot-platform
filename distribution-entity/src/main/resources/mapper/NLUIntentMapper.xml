@@ -126,11 +126,18 @@
     where nlu_intent_name = #{nluIntentName,jdbcType=VARCHAR} and nlu_domain_name = #{nluDomainName,jdbcType=VARCHAR} and enable = 1
   </select>
 
-  <select id="selectByIntentName" resultMap="BaseResultMap" >
+  <select id="selectByNluIntentName" resultMap="BaseResultMap" >
     select
     <include refid="Base_Column_List" />
     from nlu_intent
     where nlu_intent_name = #{nluIntentName,jdbcType=VARCHAR} and enable = 1
+  </select>
+
+  <select id="selectByIntentId" resultMap="BaseResultMap" >
+    select
+    <include refid="Base_Column_List" />
+    from nlu_intent
+    where intent_id = #{intentId,jdbcType=INTEGER} and enable = 1
   </select>
 
 </mapper>

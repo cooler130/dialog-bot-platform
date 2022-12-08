@@ -15,14 +15,14 @@ public class TransformRelationServiceImpl implements TransformRelationService {
     private TransformRelationMapper transformRelationMapper;
 
     @Override
-    public TransformRelation selectByContextStateIdIntent(Integer contextStateId, String contextIntentName) {
-        List<TransformRelation> transformRelations = transformRelationMapper.selectByContextStateId(contextStateId);
+    public TransformRelation selectTransformIntent(String domainName, String taskName, String contextState, String currentIntentName) {
+        List<TransformRelation> transformRelations = transformRelationMapper.selectByDTS(domainName, taskName, contextState);
         if(transformRelations != null && transformRelations.size() > 0){
             for (TransformRelation transformRelation : transformRelations) {
-                String contextIntentNames = transformRelation.getContextIntentNames();
-                String[] intentNames = contextIntentNames.split(",");
+                String intentNamesTmp = transformRelation.getIntentNames();
+                String[] intentNames = intentNamesTmp.split(",");
                 for (String intentName : intentNames) {
-                    if(intentName.equals(contextIntentName)){
+                    if(intentName.equals(currentIntentName)){
                         return transformRelation;
                     }
                 }

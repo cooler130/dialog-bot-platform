@@ -1,20 +1,24 @@
 package com.cooler.ai.platform.entity2;
 
-import lombok.Data;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 public class TransformRelation {
     private Integer id;
 
     private String transformRelationName;
 
-    private Integer contextStateId;
+    private String domainName;
 
-    private String contextIntentNames;
+    private String taskName;
+
+    private String contextState;
+
+    private String intentNames;
 
     private String transformIntentName;
 
