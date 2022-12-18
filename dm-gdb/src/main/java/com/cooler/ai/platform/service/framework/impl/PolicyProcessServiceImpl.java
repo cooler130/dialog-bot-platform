@@ -112,6 +112,7 @@ public class PolicyProcessServiceImpl implements PolicyProcessService {
      * @return
      */
     private Policy selectPolicies(List<Policy> policies, String checkedConditionsStr) {
+        if(policies == null || policies.size() == 0) return null;
         List<ConditionNodeRecord> checkedConditions = null;
         if(checkedConditionsStr != null && checkedConditionsStr.length() > 0) {
             checkedConditions = JSON.parseArray(checkedConditionsStr, ConditionNodeRecord.class);
@@ -154,9 +155,12 @@ public class PolicyProcessServiceImpl implements PolicyProcessService {
 
     @Override
     public DMResponse runActions(DialogState dialogState, List<PolicyAction> actions) {
-        Map[] twoMaps = {
-                dialogState.getFromModelStateMap(Constant.PARAM_VALUE_MAP, Map.class),                   //第1个Map作为全局变量池（先初始化为DS中的PARAM_VALUE_MAP，后面可对其进行修改）
-                new HashMap<String, String>()                                                            //第2个Map作为局部变量池
+        Map[] fiveMaps = {
+                dialogState.getFromModelStateMap(Constant.PLATFORM_PARAM_MAP, Map.class),
+                dialogState.getFromModelStateMap(Constant.CUSTOM_PARAM_MAP, Map.class),
+                dialogState.getFromModelStateMap(Constant.SLOT_PARAM_MAP, Map.class),
+                dialogState.getFromModelStateMap(Constant.BIZ_PARAM_MAP, Map.class),     //第1个Map作为全局变量池（先初始化为DS中的BIZ_PARAM_MAP，后面可对其进行修改）
+                new HashMap<String, String>()                                            //第2个Map作为局部变量池
         };
         PolicyAction interactiveAction = null;
         int i = 0, actionSize = actions.size();
@@ -170,15 +174,15 @@ public class PolicyProcessServiceImpl implements PolicyProcessService {
             logger.info("Action Running   : P:{} -> A: ( {}/{} ) [ actionId: {}, actionName: {}, actionType: {} ] ", policyId, ++ i, actionSize, groupNum, actionId, actionName, actionType);
 
             if (actionType == Constant.PROCESSED_ACTION) {
-                Map<String, Map<String, String>> newTwoMaps = ScriptUtil.runScript(actionContent, twoMaps[0], twoMaps[1]);//带出新的全局变量和局部变量结果值，twoMaps进行更新
+                Map<String, Map<String, String>> newTwoMaps = ScriptUtil.runScript(actionContent, fiveMaps[0], fiveMaps[1], fiveMaps[2], fiveMaps[3], fiveMaps[4]);//带出新的全局变量和局部变量结果值，twoMaps进行更新
                 if(newTwoMaps != null){
-                    twoMaps[0].putAll(newTwoMaps.get("gps"));                       //有了这一句，实际上脚本传出的newTwoMaps的gps的map已经加入到DialogState里面了，记录成了上下文可用于下一轮使用；
-                    twoMaps[1].putAll(newTwoMaps.get("lps"));                       //而这一句newTwoMaps的lps的map只加入到一个临时大Map，用完就没有了。
+                    fiveMaps[3].putAll(newTwoMaps.get("bps"));                       //有了这一句，实际上脚本传出的newTwoMaps的gps的map已经加入到DialogState里面了，记录成了上下文可用于下一轮使用；
+                    fiveMaps[4].putAll(newTwoMaps.get("lps"));                       //而这一句newTwoMaps的lps的map只加入到一个临时大Map，用完就没有了。
                 }
             } else if (actionType == Constant.HTTP_ACTION) {
-                Map<String, String> httpParams = HttpUtil.runHttpAction(actionContent, twoMaps[0], twoMaps[1]);
+                Map<String, String> httpParams = HttpUtil.runHttpAction(actionContent, fiveMaps[0], fiveMaps[1], fiveMaps[2], fiveMaps[3], fiveMaps[4]);
                 if(httpParams != null) {
-                    twoMaps[1].putAll(httpParams);                                  //得到的httpParams 默认 作为局部变量，如果其有部分变量需要转为全局变量，则加PROCESSED_ACTION的脚本进行变量转移
+                    fiveMaps[4].putAll(httpParams);                                  //得到的httpParams 默认 作为局部变量，如果其有部分变量需要转为全局变量，则加PROCESSED_ACTION的脚本进行变量转移
                 }
             } else if (actionType == Constant.INTERACTIVE_ACTION) {                 //交互动作限定一个Policy只有一个，找出来最后执行
                 interactiveAction = action;
@@ -192,7 +196,7 @@ public class PolicyProcessServiceImpl implements PolicyProcessService {
             interactiveData = "抱歉！出现系统错误，请重新试一次吧！(1)";
         } else {
             interactiveData = interactiveAction.getActionContent();
-            interactiveData = StringUtil.replaceVariableValues(interactiveData, twoMaps[0], twoMaps[1]);    //都会用来构建交互数据，但twoMaps[0]会保存到下一轮，twoMaps[1]用完会丢弃
+            interactiveData = StringUtil.replaceVariableValues(interactiveData, fiveMaps[0], fiveMaps[1], fiveMaps[2], fiveMaps[3], fiveMaps[4]);    //都会用来构建交互数据，但twoMaps[0]会保存到下一轮，twoMaps[1]用完会丢弃
         }
 
         logger.info("END              : [ MAC ] : {} \n", interactiveData);

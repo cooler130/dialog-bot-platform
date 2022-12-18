@@ -20,29 +20,41 @@ public class ScriptUtil {
     /**
      * 执行规定了格式的脚本
      * @param script
-     * @param gps
-     * @param lps
-     * @return  必须为Map<String, Map<String, String>>
+     * @param pps   platform params
+     * @param cps   custom params
+     * @param sps   slot params
+     * @param bps   biz params
+     * @param lps   local params
+     * @return  必须为Map<String, Map<String, String>>，只传出来bps和lps，前面三个只读不写
      */
-    public static Map<String, Map<String, String>> runScript(String script, Map<String, String> gps, Map<String, String> lps) {
+    public static Map<String, Map<String, String>> runScript(String script,
+                                                             Map<String, String> pps,
+                                                             Map<String, String> cps,
+                                                             Map<String, String> sps,
+                                                             Map<String, String> bps,
+                                                             Map<String, String> lps) {
         if(script == null || script.length() == 0) return null;
         if (engine instanceof Invocable) {
             try {
-                script = "function run(gps, lps) {"
+                script = "function run(pps, cps, sps, bps, lps) { "
                         + script
-                        + "return {'gps':gps,'lps':lps};}";
+                        + "return {'bps':bps,'lps':lps};} ";
                 engine.eval(script);
                 Invocable invokeEngine = (Invocable) engine;
-                Object o = invokeEngine.invokeFunction("run", gps, lps);
-                ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror)o;
-                Map<String, Map<String, String>> twoMap = new HashMap<>();
-                twoMap.put("gps", (Map<String, String>)scriptObjectMirror.get("gps"));
-                twoMap.put("lps", (Map<String, String>)scriptObjectMirror.get("lps"));
-                return twoMap;
+                Object o = invokeEngine.invokeFunction("run", pps, cps, sps, bps, lps);
+                Map<String, Map<String, String>> newTwoMap = null;
+                if(o != null){
+                    ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror)o;
+                    newTwoMap = new HashMap<>();
+                    newTwoMap.put("bps", (Map<String, String>)scriptObjectMirror.get("bps"));
+                    newTwoMap.put("lps", (Map<String, String>)scriptObjectMirror.get("lps"));
+                }
+                return newTwoMap;
             } catch (NoSuchMethodException e) {
                 logger.error("方法无法找到: ",  e);
             } catch (ScriptException e) {
                 logger.error("脚本错误: ",  e);
+                logger.error(script);
             }
         } else {
             logger.error("不能支持此脚本");

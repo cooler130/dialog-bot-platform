@@ -244,6 +244,6 @@
 //            }
 //        }
 //
-//        dialogState.addToModelStateMap(Constant.PARAM_VALUE_MAP, paramValueMap);
+//        dialogState.addToModelStateMap(Constant.BIZ_PARAM_MAP, paramValueMap);
 //    }
 //}

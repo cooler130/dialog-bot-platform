@@ -76,6 +76,8 @@ public class SlotOperateServiceImpl implements SlotOperateService {
         Map<String, String> targetParamValueMap = null;                                                                 //目标槽位值集合（由动作交互提供）
         Map<String, SlotState> unkonwSlotStateMap = null;                                                               //目标未知槽位集合，就是没有解析到本意图的槽位（由语言交互提供）
 
+        Map<String, String> globalBizParamMap = null;
+
         Integer targetIntentId = null;                                                                                  //目标意图ID（DM意图的ID）
         Intent targetIntent = null;                                                                                     //目标意图
 
@@ -99,7 +101,15 @@ public class SlotOperateServiceImpl implements SlotOperateService {
         }
 
         if(domainDesionData == null){
-            //todo:处理异常，抛出传值错误异常
+            //如果这句话完全没有解析出任何意思，那么进入guide-bot（GUIDE_DOMAIN领域），由引导机器人进行话术引导，来帮忙确定出下一轮对话的领域等信息。
+            domainDesionData = new DomainDesionData(
+                    sessionId, domainTaskData.getTotalTurnNum(), dmRequest.getQuery(),
+                    EntityConstant.NO_DOMAIN, EntityConstant.NO_INTENT,
+                    EntityConstant.GUIDE_DOMAIN, EntityConstant.NO_INTENT, EntityConstant.NO_INTENT_ID, EntityConstant.NO_TASK,
+                    Constant.GLOBAL_START, Constant.GLOBAL_START,
+                    false, null, null, null,
+                    null, null, null, null
+            );
         }
 
         sentence = domainDesionData.getSentence();
@@ -114,26 +124,24 @@ public class SlotOperateServiceImpl implements SlotOperateService {
         finalSameDomain = domainDesionData.getSameDomain();
 
         targetSlotStateMap = domainDesionData.getFixedSlotStateMap();
-        targetParamValueMap = domainDesionData.getFixedParamValueMap();
         unkonwSlotStateMap = domainDesionData.getUnknownSlotStateMap();
+        targetParamValueMap = domainDesionData.getFixedParamValueMap();
+        globalBizParamMap = domainDesionData.getGlobalBizParamMap();
 
         targetIntentId = domainDesionData.getIntentId();
         targetIntent = intentService.selectByIntentId(targetIntentId);
 
         //5.DialogState装载各类数据（包含槽位数据和系统数据）
-        DialogState dialogState = new DialogState();
-
-        dialogState.setSessionId(sessionId);
-
         ClientInfo clientInfo = dmRequest.getClientInfo();
-        String channel = clientInfo.getChannel();
-
         UserInfo userInfo = dmRequest.getUserInfo();
+
+        DialogState dialogState = new DialogState();
+        dialogState.setSessionId(sessionId);
         dialogState.setClientId(clientInfo.getClientId());
+        dialogState.setChannel(clientInfo.getChannel());
         dialogState.setUserId(userInfo.getUserId());
 
         dialogState.setInteractiveData(sentence);
-
         dialogState.setDomainName(domainName);
         dialogState.setTaskName(taskName);
         dialogState.setIntentName(intentName);
@@ -145,10 +153,9 @@ public class SlotOperateServiceImpl implements SlotOperateService {
         dialogState.setTotalTurnNum(domainTaskData.getTotalTurnNum());
         dialogState.setDomainTurnNum(domainTaskData.getDomainTurnNum(domainName));
         dialogState.setDomainTaskTurnNum(domainTaskData.getTaskTurnNum(domainName, taskName));
-
         dialogState.addToModelStateMap(Constant.SO_DOMAIN_DECISION_MAP, domainDecisionDataMap);
 
-        fillParamData(dialogState, dmRequest, sentence, nluDomainName, nluIntentName, targetIntent, targetSlotStateMap, unkonwSlotStateMap, targetParamValueMap, finalSameDomain, targetLastFromState, targetFromState, bizDataMSMap);
+        fillParamData(dialogState, dmRequest, sentence, nluDomainName, nluIntentName, targetIntent, targetSlotStateMap, unkonwSlotStateMap, globalBizParamMap, targetParamValueMap, finalSameDomain, targetLastFromState, targetFromState, bizDataMSMap);
 
         return dialogState;
     }
@@ -167,27 +174,25 @@ public class SlotOperateServiceImpl implements SlotOperateService {
      * @param fromState
      */
     private void fillParamData(DialogState dialogState, DMRequest dmRequest, String sentence, String targetNluDomainName, String targetNluIntentName, Intent targetIntent,
-                               Map<String, SlotState> targetSlotStateMap, Map<String, SlotState> targetUnkonwSlotStateMap, Map<String, String> targetParamValueMap,
+                               Map<String, SlotState> targetSlotStateMap, Map<String, SlotState> targetUnkonwSlotStateMap, Map<String, String> globalBizParamMap, Map<String, String> targetParamValueMap,
                                Boolean sameDomain, String lastFromState, String fromState, Map<String, BizDataModelState<String>> bizDataMSMap) {
 
-        //保存本轮的Intent，以及意图相关数据（NLU_DOMAIN_NAME、DM_DOMAIN， 这两个领域可能能用到这轮业务计算）
-        Map<String, String> paramValueMap = new HashMap<>();
-        paramValueMap.put("$" + PC.SENTENCE + "$", sentence);
-        paramValueMap.put("$" + PC.SAME_DOMAIN + "$", sameDomain + "");
-        paramValueMap.put("$" + PC.LAST_FROM_STATE + "$", lastFromState + "");
-        paramValueMap.put("$" + PC.FROM_STATE + "$", fromState + "");
+        //1.保存平台参数（PC）
+        Map<String, String> platformParamMap = new HashMap<>();
+        platformParamMap.put("$" + PC.SENTENCE + "$", sentence);
+        platformParamMap.put("$" + PC.SAME_DOMAIN + "$", sameDomain + "");
+        platformParamMap.put("$" + PC.LAST_FROM_STATE + "$", lastFromState + "");
+        platformParamMap.put("$" + PC.FROM_STATE + "$", fromState + "");
+        platformParamMap.put("$" + PC.NLU_DOMAIN_NAME + "$", targetNluDomainName);
+        platformParamMap.put("$" + PC.NLU_INTENT_NAME + "$", targetNluIntentName);
+        platformParamMap.put("$" + PC.DOMAIN_NAME + "$", targetIntent.getDomainName());
+        platformParamMap.put("$" + PC.INTENT_TYPE + "$", targetIntent.getIntentType() + "");
+        platformParamMap.put("$" + PC.INTENT_ID + "$", targetIntent.getId() + "");
+        platformParamMap.put("$" + PC.INTENT_NAME + "$", targetIntent.getIntentName());
+        platformParamMap.put("$" + PC.TASK_NAME + "$", dialogState.getTaskName() + "");
+        dialogState.addToParamValueMap(platformParamMap, Constant.PLATFORM_PARAM);
 
-        paramValueMap.put("$" + PC.NLU_DOMAIN_NAME + "$", targetNluDomainName);
-        paramValueMap.put("$" + PC.NLU_INTENT_NAME + "$", targetNluIntentName);
-
-        paramValueMap.put("$" + PC.DOMAIN_NAME + "$", targetIntent.getDomainName());
-        paramValueMap.put("$" + PC.INTENT_TYPE + "$", targetIntent.getIntentType() + "");
-        paramValueMap.put("$" + PC.INTENT_ID + "$", targetIntent.getId() + "");
-        paramValueMap.put("$" + PC.INTENT_NAME + "$", targetIntent.getIntentName());
-
-        paramValueMap.put("$" + PC.TASK_NAME + "$", dialogState.getTaskName() + "");
-
-        //保存得到的语言解析槽位数据，包括意图相关槽位和未识别槽位
+        //2.保存槽位参数，包括意图相关槽位和未识别槽位       （此部分参数存两份，一份分开存到SLOT_STATE_MAP和UNKNOWN_SLOT_STATE_MAP，一份全量存DS）
         Map<String, SlotState> allSlotStateMap = new HashMap<>();
         if(targetSlotStateMap != null && targetSlotStateMap.size() > 0){
             dialogState.addToModelStateMap(Constant.SLOT_STATE_MAP, targetSlotStateMap);
@@ -198,64 +203,72 @@ public class SlotOperateServiceImpl implements SlotOperateService {
             allSlotStateMap.putAll(targetUnkonwSlotStateMap);
         }
 
+        Map<String, String> slotParamMap = new HashMap<>();
         for (String slotName : allSlotStateMap.keySet()) {
             SlotState slotState = allSlotStateMap.get(slotName);
             List<SlotInfo> slotInfos = slotState.getSlotInfos();
             if(slotInfos != null && slotInfos.size() > 0){
                 SlotInfo slotInfo = slotInfos.get(0);
                 String value = slotInfo.getValue();
-                paramValueMap.put("@" + slotName + "@", value);
+                slotParamMap.put("@" + slotName + "@", value);
             }
         }
+        dialogState.addToParamValueMap(slotParamMap, Constant.SLOT_PARAM);
 
-        //保存得到的行为预埋的槽位数据（这部分属于用户预埋信息，为定制化的信息）
+        Map<String, String> customParamMap = new HashMap<>();
+        //3.保存定制化参数，得到的行为预埋的槽位数据（这部分属于用户预埋信息，为定制化的信息）
         if(targetParamValueMap != null && targetParamValueMap.size() > 0){
             for (String slotName : targetParamValueMap.keySet()) {
                 if(!PC.PC_PARAM_SET.contains(slotName)){
                     String slotValue = targetParamValueMap.get(slotName);
-                    paramValueMap.put("#" + slotName + "#", slotValue);
+                    customParamMap.put("#" + slotName + "#", slotValue);
                 }
             }
         }
 
-        //将DMRequest里面的数据作为定制参数加入到paramValueMap中
-        paramValueMap.put("#" + CC.SESSION_ID + "#", dialogState.getSessionId());
-        paramValueMap.put("#" + CC.TURN_NUM + "#", dialogState.getTotalTurnNum() + "");         //这个数据前面已经设置到了dialogState里面了
-        paramValueMap.put("#" + CC.QUERY_TYPE + "#", dmRequest.getRequestType());
+        customParamMap.put("#" + CC.SESSION_ID + "#", dialogState.getSessionId());
+        customParamMap.put("#" + CC.TURN_NUM + "#", dialogState.getTotalTurnNum() + "");         //这个数据前面已经设置到了dialogState里面了
+        customParamMap.put("#" + CC.QUERY_TYPE + "#", dmRequest.getRequestType());
         ClientInfo clientInfo = dmRequest.getClientInfo();
         if(clientInfo != null){
-            paramValueMap.put("#" + CC.CLIENT_ID + "#", clientInfo.getClientId());
-            paramValueMap.put("#" + CC.CHANNEL + "#", clientInfo.getChannel());
-            paramValueMap.put("#" + CC.CLIENT_NAME + "#", clientInfo.getClientName());
-            paramValueMap.put("#" + CC.CLIENT_TYPE + "#", clientInfo.getClientType());
+            customParamMap.put("#" + CC.CLIENT_ID + "#", clientInfo.getClientId());
+            customParamMap.put("#" + CC.CHANNEL + "#", clientInfo.getChannel());
+            customParamMap.put("#" + CC.CLIENT_NAME + "#", clientInfo.getClientName());
+            customParamMap.put("#" + CC.CLIENT_TYPE + "#", clientInfo.getClientType());
         }
         UserInfo userInfo = dmRequest.getUserInfo();
         if(userInfo != null){
-            paramValueMap.put("#" + CC.USER_ID + "#", userInfo.getUserId());
-            paramValueMap.put("#" + CC.USER_NAME + "#", userInfo.getUserName());
+            customParamMap.put("#" + CC.USER_ID + "#", userInfo.getUserId());
+            customParamMap.put("#" + CC.USER_NAME + "#", userInfo.getUserName());
         }
         LocationInfo locationInfo = dmRequest.getLocationInfo();
         if(locationInfo != null){
-            paramValueMap.put("#" + CC.CITY_NAME + "#", locationInfo.getCityName());
+            customParamMap.put("#" + CC.CITY_NAME + "#", locationInfo.getCityName());
         }
         Map<String, String> extendInfo = dmRequest.getExtendInfo();
         if(extendInfo != null && extendInfo.size() > 0){
             for (String key : extendInfo.keySet()) {
                 if(!PC.PC_PARAM_SET.contains(key)){
-                    paramValueMap.put("#" + key + "#", extendInfo.get(key));
+                    customParamMap.put("#" + key + "#", extendInfo.get(key));
                 }
             }
         }
+        dialogState.addToParamValueMap(customParamMap, Constant.CUSTOM_PARAM);
 
-        //将前面轮次得到的所有业务参数，全部加入到paramValueMap中
+        //保持业务参数集，将前面轮次得到的所有业务参数
+        Map<String, String> bizParamMap = new HashMap<>();
+        if(globalBizParamMap != null && globalBizParamMap.size() > 0){
+            bizParamMap.putAll(globalBizParamMap);
+        }
+
         if(bizDataMSMap != null && bizDataMSMap.size() > 0){
             for (String bizItemKey : bizDataMSMap.keySet()) {
                 BizDataModelState<String> bizItemValueMS = bizDataMSMap.get(bizItemKey);
                 String bizItemValue = bizItemValueMS.getT();
-                paramValueMap.put("%" + bizItemKey + "%", bizItemValue);
+                bizParamMap.put("%" + bizItemKey + "%", bizItemValue);
             }
         }
 
-        dialogState.addToModelStateMap(Constant.PARAM_VALUE_MAP, paramValueMap);
+        dialogState.addToParamValueMap(bizParamMap, Constant.BIZ_PARAM);
     }
 }

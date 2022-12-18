@@ -29,6 +29,8 @@ public class DomainDesionData {
     private Map<String, SlotState> fixedSlotStateMap = null;
     private Map<String, SlotState> unknownSlotStateMap = null;
 
+    private Map<String, String> globalBizParamMap = null;
+
     private Map<String, String> fixedParamValueMap = null;                                                               //直接装载nonLanguage分发数据体
 
 }

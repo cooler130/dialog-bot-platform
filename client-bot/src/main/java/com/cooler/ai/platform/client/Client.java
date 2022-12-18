@@ -44,7 +44,6 @@ public class Client {
         //准备一个带有init信号的DmRequest。
         String signal = "init";
         String sessionId = "SID_TEST_" + System.currentTimeMillis();
-        System.out.println("0 ---->驱动信号：" + signal);
         DMRequest dmRequest = UtilBean.createDmRequest(sessionId, dmType, EntityConstant.QUERYTYPE_SIGNAL, initQuery);    //信号init驱动，产生欢迎语
         DMResponse dmResponse = distributionCenterFacade.distributeProcess(dmRequest);
         String query = "";
@@ -117,9 +116,9 @@ public class Client {
                         String fromStateId2 = message.getFromStateId2();
                         String toStateId = message.getToStateId();
                         if(messageType.equals("text")){
-                            System.out.println(turnNum + " ---->机 ：(话术表达）" + messageData + ", " + lastFromStateId + ", (" + fromStateId + ", " + fromStateId2 + ") -> " + message.getIntentCondition() + "-> " + toStateId);
+                            System.out.println(turnNum + " ---->机 ：(话术表达）" + messageData);
                         }else if(messageType.equals("bubble")){
-                            System.out.println(turnNum + " ---->机 ：(操作信息）" + messageData + ", " + lastFromStateId + ", (" + fromStateId + ", " + fromStateId2 + ") -> " + message.getIntentCondition() + "-> " + toStateId);
+                            System.out.println(turnNum + " ---->机 ：(操作信息）" + messageData);
                         }else if(messageType.equals("data")){
                             System.out.println(turnNum + " 业务数据 ： " + messageData);
                         }

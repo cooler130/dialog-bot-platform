@@ -2,8 +2,6 @@ package com.cooler.ai.platform.strategy;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.TypeReference;
 import com.cooler.ai.nlu.DomainInfo;
 import com.cooler.ai.nlu.SlotInfo;
 import com.cooler.ai.platform.EntityConstant;
@@ -36,6 +34,7 @@ public class LanguageStrategy {
 
         List<DomainDesionData> domainDesionDatas = operate(dmRequest, historyDialogStates, domainTaskData.getTotalTurnNum(), Constant.MAX_BACKUP_TURN_COUNT,
                 nluIntentService, nluSlotService, intentService, slotService, slotRelationService, domainDecisionMap);
+        //todo:在这一部分任重道远，需要做一下领域、意图和槽位的澄清（DomainDesionData类需要加入NLU对领域、意图和槽位的解析分数，依据分数进行澄清，分数阈值需要动态设置到数据库中）
         if (domainDesionDatas != null && domainDesionDatas.size() > 0) {
             DomainDesionData domainDesionData = domainDesionDatas.get(0);                                     //经过对DomainIndicator排序，已经将最佳DomainData放到了第一个
             return domainDesionData;
@@ -79,7 +78,9 @@ public class LanguageStrategy {
         List<DomainInfo> allDomainInfos = new ArrayList<>();                                                        //装载NLU中解析出的多个领域的数据（后续根据此集合来准备下面的领域指标数据和领域业务数据）
         for (String domainName : domainNames){
             try {
-                String httpResponseJS = HttpUtil.doGet4Rest(nluUrl, Arrays.asList(sentence, domainName), null);//todo：如果那边需要NLU接口创建Token（现在是支持的），则将Token赋予Access-Token，放到httpHeader中
+                String httpResponseJS = HttpUtil.doGet4Rest(nluUrl, Arrays.asList(sentence, domainName), null);
+                //todo：1.如果那边需要NLU接口创建Token（现在是支持的），则将Token赋予Access-Token，放到httpHeader中。
+                //todo：2.NLU的解析，需要带上最近一两个（领域-任务之下的状态，对应状态下需要的意图集合，都是可以查到的），这样让NLU有了"参考"，将解析结果"靠近"所需结果，算是一种"作弊"
                 HttpResponse<JSONArray> httpResponse = JSON.parseObject(httpResponseJS, HttpResponse.class);
                 int code = httpResponse.getCode();
                 if (code == 200) {
@@ -95,7 +96,7 @@ public class LanguageStrategy {
             }
         }
 
-        //3.遍历上面得到的DomainInfo集合（意图解析结果），找到最佳的一个
+        //3.遍历上面得到的NLU的DomainInfo集合（意图解析结果），找到最佳的一个（两类工作：3.1.明确domainName、taskName、intentName和目标Intent对象； 3.2.建立继承了上下文的槽位集；）
         for (int i = 0; i < allDomainInfos.size(); i++) {                                                           //遍历各个领域对象，进行比较，选择最优领域
             DomainInfo domainInfo = allDomainInfos.get(i);
 
@@ -109,6 +110,7 @@ public class LanguageStrategy {
             Map<String, SlotState> currentSlotStateMap = null;                                                      //本轮产生的槽位记录
             Map<String, String> exchangedRecordMap = null;                                                          //本轮槽位值替换历史槽位值的记录
 
+            //------------------------------------------开始决策domainName、taskName、intentName和目标Intent对象
             //3.1.a.将NLU槽位值进行聚合并收集
             Map<String, List<SlotInfo>> currentNluSlotInfoListMap = aggregateNLUSlots(domainInfo);                  //本轮产生的聚合的NLU模块的SlotInfo集合，将nlu领域中的槽位按槽位名称进行聚合收集，得到一个Map
             Set<String> currentNluSlotNames = currentNluSlotInfoListMap.keySet();                                   //本轮产生的聚合后的NLU槽位名称集合
@@ -139,6 +141,7 @@ public class LanguageStrategy {
                 nluDomainName = EntityConstant.NO_DOMAIN;
             }
 
+            //3.1.c.开始执行下面的策略，为domainName、taskName、intentName 赋值
             if(nluDomainName.equals(EntityConstant.NO_DOMAIN)){
                 //策略1：NO_DOMAIN && (NO_INTENT_ID || UNKNOWN_INTENT)，相见《语义分发策略》
                 if(isNoIntent || isUnknownIntent){
@@ -244,6 +247,7 @@ public class LanguageStrategy {
                 }
             }
 
+            //3.1.d.根据赋值的domainName、taskName、intentName，找到对应的目标Intent对象
             Integer intentId = null;
             Intent targetIntent = intentService.selectByTwoNames(domainName, intentName);
             if(targetIntent == null){
@@ -253,7 +257,8 @@ public class LanguageStrategy {
                 intentId = targetIntent.getId();
             }
 
-            //3.1.c.确定此NLU意图对应DM意图的槽位信息
+            //------------------------------------------开始建立继承了上下文的槽位集；
+            //3.2.a.确定此NLU意图对应DM意图的槽位信息
             List<Slot> slots = slotService.selectByIntentId(intentId);                                              //此DM的Intent下含有的slot集合
             Map<Integer, SlotState> currentIntentSlotStateMap = new HashMap<>();                                    //将本轮得到的槽位信息包装体SlotState集合收集起来
             List<Integer> slotIds = new ArrayList<>();                                                              //将DM意图的槽位ID集合收集起来
@@ -275,7 +280,7 @@ public class LanguageStrategy {
                 }
             }
 
-            //3.1.d.将获取的nluSlot集合转变为DM内部的槽位对象，并将NLU解析的槽位值填入此槽位对象中
+            //3.2.b.将获取的nluSlot集合转变为DM内部的槽位对象，并将NLU解析的槽位值填入此槽位对象中
             if (slotIds.size() > 0) {
                 List<SlotRelation> slotRelations = slotRelationService.selectBySlotIds(slotIds);
                 Map<Integer, List<Integer>> nluSlotSlotIdMap = new HashMap<>();                                     //构建 Map<nluSlotId, List<slotId>>，留以后用
@@ -315,7 +320,7 @@ public class LanguageStrategy {
                 }
             }
 
-            //3.1.e.将NLU解析出但没被DM记录的槽位值日志打印以备人工后续做关联；并放入一个Map中，以备后用。
+            //3.2.c.将NLU解析出但没被DM记录的槽位值日志打印以备人工后续做关联；并放入一个Map中，以备后用。
             Map<String, SlotState> unknownSlotStateMapTmp = null;                                                   //前面NLU解析出来的值可能有些不被DM识别，那么统一装到这个List里面，有待处理。
             if (currentNluSlotNames != null && currentNluSlotNames.size() > 0) {
                 logger.warn("2.1.e.警告！此NLU解析的槽位值名称在DM中没有对应上相关槽位。nluDomainName为： " + nluDomainName + "   ，nluIntentName为： " + nluIntentName + "，名称集合为：  " + JSON.toJSONString(currentNluSlotNames));
@@ -342,11 +347,10 @@ public class LanguageStrategy {
 
             //3.1.f.分两种情况（有上下文和无上下文），结合业务情况，将上文中的历史槽位数据和本轮的槽位数据进行整合（这里需要更进一步的梳理和扩展）
             if (historyDialogStates != null && historyDialogStates.size() > 0) {
-                System.out.println("historyDialogStates ------》 ：   " + JSON.toJSONString(historyDialogStates));
                 for (int j = 0; j < historyDialogStates.size(); j ++) {
                     DialogState historyDialogStateTmp2 = historyDialogStates.get(j);
                     String historySessionId = historyDialogStateTmp2.getSessionId();
-                    int historyTurnNum = historyDialogStateTmp2.getTotalTurnNum();
+                    int historyTotalTurnNum = historyDialogStateTmp2.getTotalTurnNum();
                     boolean sameDomainTmp = false;
                     Map<String, SlotState> fixedSlotStateMap = new HashMap<>();
                     String historyFromState = EntityConstant.GLOBAL_START;
@@ -431,9 +435,11 @@ public class LanguageStrategy {
                         totalValuedSlotCount++;
                     }
 
+                    Map<String, String> globalBizParamMap = historyDialogStateTmp2.getFromModelStateMap(Constant.BIZ_PARAM_MAP, Map.class);
+
                     //3.1.h.收集上面整理好的各种数据，包装成评判数据体和业务数据体
-                    domainIndicators.add(new DomainIndicator("DO:" + i + "_DS:" + j, historyNluDomainName, historyDomainName, nluDomainName, nluIntentName, nluDomainScore, valuedNecessarySlotCount, valuedImportantSlotCount, totalImportanceDegree, totalValuedSlotCount, historyTurnNum));
-                    domainDesionDatasMap.put("DO:" + i + "_DS:" + j, new DomainDesionData(historySessionId, historyTurnNum, sentence, nluDomainName, nluIntentName, domainName, intentName, intentId, taskName, historyFromState, historyToState, sameDomainTmp, historySlotStateMap, currentSlotStateMap, exchangedRecordMap, fixedSlotStateMap, unknownSlotStateMapTmp, null));
+                    domainIndicators.add(new DomainIndicator("DO:" + i + "_DS:" + j, historyNluDomainName, historyDomainName, nluDomainName, nluIntentName, nluDomainScore, valuedNecessarySlotCount, valuedImportantSlotCount, totalImportanceDegree, totalValuedSlotCount, historyTotalTurnNum));
+                    domainDesionDatasMap.put("DO:" + i + "_DS:" + j, new DomainDesionData(historySessionId, historyTotalTurnNum, sentence, nluDomainName, nluIntentName, domainName, intentName, intentId, taskName, historyFromState, historyToState, sameDomainTmp, historySlotStateMap, currentSlotStateMap, exchangedRecordMap, fixedSlotStateMap, unknownSlotStateMapTmp, globalBizParamMap, null));
                 }
             }
             else {
@@ -458,7 +464,7 @@ public class LanguageStrategy {
 
                 //3.1.j.收集上面整理好的各种数据，包装成评判数据体和业务数据体
                 domainIndicators.add(new DomainIndicator("DO:" + i + "_DS:" + 0, historyNluDomainName, historyDomainName, nluDomainName, nluIntentName, nluDomainScore, valuedNecessarySlotCount, valuedImportantSlotCount, totalImportanceDegree, totalValuedSlotCount, totalTurnNum));
-                domainDesionDatasMap.put("DO:" + i + "_DS:" + 0, new DomainDesionData(sessionId, totalTurnNum, sentence, nluDomainName, nluIntentName, domainName, intentName, intentId, taskName, EntityConstant.GLOBAL_START, EntityConstant.GLOBAL_START, sameDomainTmp, historySlotStateMap, currentSlotStateMap, exchangedRecordMap, fixedSlotStateMap, unknownSlotStateMapTmp, null));
+                domainDesionDatasMap.put("DO:" + i + "_DS:" + 0, new DomainDesionData(sessionId, totalTurnNum, sentence, nluDomainName, nluIntentName, domainName, intentName, intentId, taskName, EntityConstant.GLOBAL_START, EntityConstant.GLOBAL_START, sameDomainTmp, historySlotStateMap, currentSlotStateMap, exchangedRecordMap, fixedSlotStateMap, unknownSlotStateMapTmp, null, null));
             }
         }
 
@@ -493,11 +499,9 @@ public class LanguageStrategy {
             }
 
             String domainDatasJS = JSON.toJSONString(domainDesionDatasMap);                                                  //按理说这个时候domainDatas里面的各个元素已经被评估等级了（设置了level）
-            System.out.println("\n得到的DomainDatas为：" + sessionId + "(" + totalTurnNum + ")" + " ---> " + domainDatasJS + "\n");
             decisionProcessMap.put(Constant.DOMAIN_DATAS, domainDatasJS);
 
             String domainIndicatorsJS = JSON.toJSONString(domainIndicators);
-            System.out.println("\n得到的DomainIndicators为：" + domainIndicatorsJS + "\n");
             decisionProcessMap.put(Constant.DOMAIN_INDICATORS, domainIndicatorsJS);
 
             return lastDomainDesionData;

@@ -29,11 +29,14 @@ public class NonLanguageStrategy {
         DialogState lastDialogState = null;
         String targetLastFromState = null;
         String targetFromState = null;
+        Map<String, String> globalBizParamMap = null;
         if (historyDialogStates != null && historyDialogStates.size() > 0) {
             lastDialogState = historyDialogStates.get(0);
             if(lastDialogState != null){
                 targetLastFromState = lastDialogState.getParamValue(PC.FROM_STATE2, Constant.PLATFORM_PARAM);
                 targetFromState = lastDialogState.getParamValue(PC.TO_STATE, Constant.PLATFORM_PARAM);
+
+                globalBizParamMap = lastDialogState.getFromModelStateMap(Constant.BIZ_DATA, Map.class);
             }
         }
         targetLastFromState = targetLastFromState != null ? targetLastFromState : EntityConstant.GLOBAL_START;
@@ -59,17 +62,17 @@ public class NonLanguageStrategy {
                     null,
                     null,
                     null,
+                    globalBizParamMap,
                     null
             );
         } else {
             String domainName = extendInfo.get(PC.DOMAIN_NAME);
             String taskName = extendInfo.get(PC.TASK_NAME);
             String intentName = extendInfo.get(PC.INTENT_NAME);
-            String paramValueMapJS = extendInfo.get(Constant.PARAM_VALUE_MAP);
+            String paramValueMapJS = extendInfo.get(Constant.BIZ_PARAM_MAP);
 
             String nluDomainName = domainName;
             String nluIntentName = intentName;
-
 
             if (intentName != null && domainName != null && taskName != null) {
                 Intent targetIntent = intentService.selectByTwoNames(domainName, intentName);
@@ -96,6 +99,7 @@ public class NonLanguageStrategy {
                             null,
                             null,
                             null,
+                            globalBizParamMap,
                             fixedParamValueMap
                             );
                 } else {
@@ -121,6 +125,7 @@ public class NonLanguageStrategy {
                     null,
                     null,
                     null,
+                    globalBizParamMap,
                     null
             );
         }

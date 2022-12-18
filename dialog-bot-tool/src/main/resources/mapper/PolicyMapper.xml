@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cooler.ai.dm.dao.PolicyMapper" >
+  <resultMap id="BaseResultMap" type="com.cooler.ai.dm.entity.Policy" >
+    <constructor >
+      <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="policy_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="domain_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="task_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="from_state" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="intent_names" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="to_state" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="enable" jdbcType="TINYINT" javaType="java.lang.Byte" />
+      <arg column="msg" jdbcType="VARCHAR" javaType="java.lang.String" />
+    </constructor>
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List" >
+    id, policy_name, domain_name, task_name, from_state, intent_names, to_state, enable, 
+    msg
+  </sql>
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.cooler.ai.dm.entity.PolicyExample" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    'false' as QUERYID,
+    <include refid="Base_Column_List" />
+    from policy
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from policy
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from policy
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.cooler.ai.dm.entity.Policy" useGeneratedKeys="true" keyProperty="id">
+    insert into policy (policy_name, domain_name,
+      task_name, from_state, intent_names, 
+      to_state, enable, msg
+      )
+    values (#{policyName,jdbcType=VARCHAR}, #{domainName,jdbcType=VARCHAR},
+      #{taskName,jdbcType=VARCHAR}, #{fromState,jdbcType=VARCHAR}, #{intentNames,jdbcType=VARCHAR}, 
+      #{toState,jdbcType=VARCHAR}, #{enable,jdbcType=TINYINT}, #{msg,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.cooler.ai.dm.entity.Policy" >
+    insert into policy
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="policyName != null" >
+        policy_name,
+      </if>
+      <if test="domainName != null" >
+        domain_name,
+      </if>
+      <if test="taskName != null" >
+        task_name,
+      </if>
+      <if test="fromState != null" >
+        from_state,
+      </if>
+      <if test="intentNames != null" >
+        intent_names,
+      </if>
+      <if test="toState != null" >
+        to_state,
+      </if>
+      <if test="enable != null" >
+        enable,
+      </if>
+      <if test="msg != null" >
+        msg,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="policyName != null" >
+        #{policyName,jdbcType=VARCHAR},
+      </if>
+      <if test="domainName != null" >
+        #{domainName,jdbcType=VARCHAR},
+      </if>
+      <if test="taskName != null" >
+        #{taskName,jdbcType=VARCHAR},
+      </if>
+      <if test="fromState != null" >
+        #{fromState,jdbcType=VARCHAR},
+      </if>
+      <if test="intentNames != null" >
+        #{intentNames,jdbcType=VARCHAR},
+      </if>
+      <if test="toState != null" >
+        #{toState,jdbcType=VARCHAR},
+      </if>
+      <if test="enable != null" >
+        #{enable,jdbcType=TINYINT},
+      </if>
+      <if test="msg != null" >
+        #{msg,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.cooler.ai.dm.entity.Policy" >
+    update policy
+    <set >
+      <if test="policyName != null" >
+        policy_name = #{policyName,jdbcType=VARCHAR},
+      </if>
+      <if test="domainName != null" >
+        domain_name = #{domainName,jdbcType=VARCHAR},
+      </if>
+      <if test="taskName != null" >
+        task_name = #{taskName,jdbcType=VARCHAR},
+      </if>
+      <if test="fromState != null" >
+        from_state = #{fromState,jdbcType=VARCHAR},
+      </if>
+      <if test="intentNames != null" >
+        intent_names = #{intentNames,jdbcType=VARCHAR},
+      </if>
+      <if test="toState != null" >
+        to_state = #{toState,jdbcType=VARCHAR},
+      </if>
+      <if test="enable != null" >
+        enable = #{enable,jdbcType=TINYINT},
+      </if>
+      <if test="msg != null" >
+        msg = #{msg,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.cooler.ai.dm.entity.Policy" >
+    update policy
+    set policy_name = #{policyName,jdbcType=VARCHAR},
+      domain_name = #{domainName,jdbcType=VARCHAR},
+      task_name = #{taskName,jdbcType=VARCHAR},
+      from_state = #{fromState,jdbcType=VARCHAR},
+      intent_names = #{intentNames,jdbcType=VARCHAR},
+      to_state = #{toState,jdbcType=VARCHAR},
+      enable = #{enable,jdbcType=TINYINT},
+      msg = #{msg,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

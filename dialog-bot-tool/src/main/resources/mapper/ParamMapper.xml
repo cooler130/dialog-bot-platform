@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cooler.ai.dm.dao.ParamMapper" >
+  <resultMap id="BaseResultMap" type="com.cooler.ai.dm.entity.Param" >
+    <constructor >
+      <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="domain_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="task_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="param_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="acquire_type" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="group_num" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="acquire_content" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="enable" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="msg" jdbcType="VARCHAR" javaType="java.lang.String" />
+    </constructor>
+  </resultMap>
+  <sql id="Example_Where_Clause" >
+    <where >
+      <foreach collection="oredCriteria" item="criteria" separator="or" >
+        <if test="criteria.valid" >
+          <trim prefix="(" suffix=")" prefixOverrides="and" >
+            <foreach collection="criteria.criteria" item="criterion" >
+              <choose >
+                <when test="criterion.noValue" >
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue" >
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue" >
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue" >
+                  and ${criterion.condition}
+                  <foreach collection="criterion.value" item="listItem" open="(" close=")" separator="," >
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List" >
+    id, domain_name, task_name, param_name, acquire_type, group_num, acquire_content, 
+    enable, msg
+  </sql>
+  <select id="selectByExample" resultMap="BaseResultMap" parameterType="com.cooler.ai.dm.entity.ParamExample" >
+    select
+    <if test="distinct" >
+      distinct
+    </if>
+    'false' as QUERYID,
+    <include refid="Base_Column_List" />
+    from param
+    <if test="_parameter != null" >
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null" >
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from param
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from param
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.cooler.ai.dm.entity.Param" useGeneratedKeys="true" keyProperty="id">
+    insert into param (domain_name, task_name,
+      param_name, acquire_type, group_num, 
+      acquire_content, enable, msg
+      )
+    values (#{domainName,jdbcType=VARCHAR}, #{taskName,jdbcType=VARCHAR},
+      #{paramName,jdbcType=VARCHAR}, #{acquireType,jdbcType=INTEGER}, #{groupNum,jdbcType=INTEGER}, 
+      #{acquireContent,jdbcType=VARCHAR}, #{enable,jdbcType=INTEGER}, #{msg,jdbcType=VARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.cooler.ai.dm.entity.Param" >
+    insert into param
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="domainName != null" >
+        domain_name,
+      </if>
+      <if test="taskName != null" >
+        task_name,
+      </if>
+      <if test="paramName != null" >
+        param_name,
+      </if>
+      <if test="acquireType != null" >
+        acquire_type,
+      </if>
+      <if test="groupNum != null" >
+        group_num,
+      </if>
+      <if test="acquireContent != null" >
+        acquire_content,
+      </if>
+      <if test="enable != null" >
+        enable,
+      </if>
+      <if test="msg != null" >
+        msg,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="domainName != null" >
+        #{domainName,jdbcType=VARCHAR},
+      </if>
+      <if test="taskName != null" >
+        #{taskName,jdbcType=VARCHAR},
+      </if>
+      <if test="paramName != null" >
+        #{paramName,jdbcType=VARCHAR},
+      </if>
+      <if test="acquireType != null" >
+        #{acquireType,jdbcType=INTEGER},
+      </if>
+      <if test="groupNum != null" >
+        #{groupNum,jdbcType=INTEGER},
+      </if>
+      <if test="acquireContent != null" >
+        #{acquireContent,jdbcType=VARCHAR},
+      </if>
+      <if test="enable != null" >
+        #{enable,jdbcType=INTEGER},
+      </if>
+      <if test="msg != null" >
+        #{msg,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.cooler.ai.dm.entity.Param" >
+    update param
+    <set >
+      <if test="domainName != null" >
+        domain_name = #{domainName,jdbcType=VARCHAR},
+      </if>
+      <if test="taskName != null" >
+        task_name = #{taskName,jdbcType=VARCHAR},
+      </if>
+      <if test="paramName != null" >
+        param_name = #{paramName,jdbcType=VARCHAR},
+      </if>
+      <if test="acquireType != null" >
+        acquire_type = #{acquireType,jdbcType=INTEGER},
+      </if>
+      <if test="groupNum != null" >
+        group_num = #{groupNum,jdbcType=INTEGER},
+      </if>
+      <if test="acquireContent != null" >
+        acquire_content = #{acquireContent,jdbcType=VARCHAR},
+      </if>
+      <if test="enable != null" >
+        enable = #{enable,jdbcType=INTEGER},
+      </if>
+      <if test="msg != null" >
+        msg = #{msg,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.cooler.ai.dm.entity.Param" >
+    update param
+    set domain_name = #{domainName,jdbcType=VARCHAR},
+      task_name = #{taskName,jdbcType=VARCHAR},
+      param_name = #{paramName,jdbcType=VARCHAR},
+      acquire_type = #{acquireType,jdbcType=INTEGER},
+      group_num = #{groupNum,jdbcType=INTEGER},
+      acquire_content = #{acquireContent,jdbcType=VARCHAR},
+      enable = #{enable,jdbcType=INTEGER},
+      msg = #{msg,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

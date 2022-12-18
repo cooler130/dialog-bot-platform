@@ -27,11 +27,13 @@ public class Constant {
     //下面为dialogState中ModelStateMap包含的5个数据
     public static final String SLOT_STATE_MAP = "slotStateMap";                         //槽位状态集标示（从NLU结果解析获取）
     public static final String UNKNOWN_SLOT_STATE_MAP = "unknownSlotStateMap";          //未识别槽位状态集标示（从NLU结果解析获取）
-    public static final String PARAM_VALUE_MAP = "paramValueMap";                       //4类数据存放处
-    public static final String INTENT = "intent";                                       //本轮意图对象
-    public static final String TRANSFORM_INTENT = "transformIntent";                    //本轮转义意图对象
+
+    public static final String PLATFORM_PARAM_MAP = "platformParamMap";                 //平台参数Map（系统参数Map）
+    public static final String SLOT_PARAM_MAP = "slotParamMap";                         //槽位参数Map
+    public static final String CUSTOM_PARAM_MAP = "customParamMap";                     //用户定制化参数Map
+    public static final String BIZ_PARAM_MAP = "bizParamMap";                           //业务参数Map
+
     public static final String SO_DOMAIN_DECISION_MAP = "soDomainDecisionMap";          //（SlotOperate阶段记录）记录在多domain进行的决策过程种产生的决策数据
-    public static final String DST_TRANSITION_CHECK_MAP = "dstTransitionCheckMap";      //（DST阶段记录）记录在多个变迁中，各个变迁的检测过程数据
 
     public static final String DOMAIN_DATAS = "domainDatas";                            //槽位操作记录（历史槽值集合、本轮得到的槽值集合、替换记录、最终确认的槽位集合）
     public static final String DOMAIN_INDICATORS = "domainIndicators";                  //领域决策过程记录（各个领域所获取的比较特征数据，以及比较数据集合）

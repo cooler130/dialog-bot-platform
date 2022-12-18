@@ -21,17 +21,4 @@ public class HttpScriptBean {
     private Integer connectTimeout;
     private Integer connectionRequestTimeout;
 
-
-
-    public static void main(String[] args) {
-
-        JSONObject jo = new JSONObject();
-        jo.put("sentence", "$sentence$");
-        jo.put("excludeTqIds", "%excludeTqIds%");
-
-        HttpScriptBean httpScriptBean = new HttpScriptBean("http://localhost:8081/v1/burouter2/getTop1TqData", "post", jo.toJSONString(), "TQDataInfo", null, null, null);
-        String s = JSONObject.toJSONString(httpScriptBean);
-
-        System.out.println(s);
-    }
 }

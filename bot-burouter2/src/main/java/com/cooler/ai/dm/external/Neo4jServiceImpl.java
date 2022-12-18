@@ -50,7 +50,7 @@ public class Neo4jServiceImpl implements GDBService {
 	 * @return
 	 */
 	public List<IntentSetNode> getIntentSetsFromState(String domainName, String taskName, String stateName, String intentName) {
-		String queryForIntents = "match data=(s1:State{value:'" + stateName + "', domain:'" + domainName + "', task:'" + taskName + "'})-[]->(is:IntentSet{value:'" + intentName + "'}) return is";
+		String queryForIntents = "match data=(s1:State{value:'" + stateName + "', domain:'" + domainName + "', task:'" + taskName + "'})-[]->(is:IntentSet) where '" + intentName + "' in split(is.value, ',') return is";
 		List<Map<String, String>> ents = new ArrayList<>();
 		Session session = null;
 		try {
@@ -78,7 +78,7 @@ public class Neo4jServiceImpl implements GDBService {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("发生neo4j连接异常：", e);
 		} finally {
 			session.close();
 		}
@@ -148,7 +148,10 @@ public class Neo4jServiceImpl implements GDBService {
 					Path path = value.asPath();
 					SEGMENT : for (Path.Segment segment : path) {                       //取出当前Path的一个段Segment
 						Node end = segment.end();
-						if(end.get("value").equals("State")) return path;               //循环出口：如果end节点是一个状态节点，则说明已经走到此Path尾端，则此Path完全可行，返回此Path
+						String nodeClass = end.get("class").asString();
+						String nodeValue = end.get("value").asString();
+						if(nodeClass.equals("State") && nodeValue.equals(Constant.GLOBAL_END)) return path;               //循环出口：如果end节点是一个状态节点，则说明已经走到此Path尾端，则此Path完全可行，返回此Path
+						//todo:上面逻辑不清楚了，回想一下为何有上面的逻辑。
 					}
 				}
 			}
@@ -199,12 +202,12 @@ public class Neo4jServiceImpl implements GDBService {
 				}
 			}
 		} catch (Exception e) {
-			logger.error("neo4j 连接失败！", e);
+			logger.error("neo4j 路径计算异常：", e);
 		} finally {
 			try{
 				session.close();
 			}catch (Exception e){
-				logger.error("neo4j 关闭失败！", e);
+				logger.error("neo4j 关闭失败：", e);
 			}
 		}
 		return null;
@@ -246,12 +249,18 @@ public class Neo4jServiceImpl implements GDBService {
 	}
 
 	private boolean checkConditionValue(DialogState dialogState, String domain, String task, String paramType, String param, String option, String compareValueStr, List<Param> conditionParams) {
-		if(domain.equals("null") || paramType.equals("null") || param.equals("null") || option.equals("null") || compareValueStr.equals("null") || conditionParams == null) return false;
-		//todo:这里还是抛出一个专有异常吧
+		if(domain.equals("null") || paramType.equals("null") || param.equals("null") || option.equals("null") || compareValueStr.equals("null") || conditionParams == null) {
+			logger.error("Condition Error  : domain:{}, paramType:{}, param:{}, option:{}, compareValueStr:{}, conditionParams:{} 都不可为空！",
+					domain, paramType, param, option, compareValueStr, conditionParams);
+			return false;
+		}
 
-		Map[] twoMaps = {
-				dialogState.getFromModelStateMap(Constant.PARAM_VALUE_MAP, Map.class),                   				//第1个Map作为全局变量池（先初始化为DS中的PARAM_VALUE_MAP，后面可对其进行修改）
-				new HashMap<String, String>()                                                            				//第2个Map作为局部变量池
+		Map[] fiveMaps = {
+				dialogState.getFromModelStateMap(Constant.PLATFORM_PARAM_MAP, Map.class),
+				dialogState.getFromModelStateMap(Constant.CUSTOM_PARAM_MAP, Map.class),
+				dialogState.getFromModelStateMap(Constant.SLOT_PARAM_MAP, Map.class),
+				dialogState.getFromModelStateMap(Constant.BIZ_PARAM_MAP, Map.class),     //第3个Map作为全局变量池（先初始化为DS中的BIZ_PARAM_MAP，后面可对其进行修改）
+				new HashMap<String, String>()                                            //第4个Map作为局部变量池
 		};
 		for (Param conditionParam : conditionParams) {
 			Integer acquireType = conditionParam.getAcquireType();
@@ -261,27 +270,27 @@ public class Neo4jServiceImpl implements GDBService {
 			logger.info(" -> Param Getting: 开始获取变量 {} 的值，获取阶段号：{}，使用 {} 类型的获取方式。", param, groupNum, acquireType == Constant.SCRIPT_ACQUIRE ? "script" : "http");
 			if(acquireContent != null && !acquireContent.trim().equals("")){
 				if(acquireType == Constant.SCRIPT_ACQUIRE){																//本地脚本计算获取
-					Map<String, Map<String, String>> newTwoMaps = ScriptUtil.runScript(acquireContent, twoMaps[0], twoMaps[1]);	//带出新的全局变量和局部变量结果值，twoMaps进行更新
+					Map<String, Map<String, String>> newTwoMaps = ScriptUtil.runScript(acquireContent, fiveMaps[0], fiveMaps[1], fiveMaps[2], fiveMaps[3], fiveMaps[4]);	//带出新的全局变量和局部变量结果值，twoMaps进行更新
 					if(newTwoMaps != null){
-						twoMaps[0].putAll(newTwoMaps.get("gps"));
-						twoMaps[1].putAll(newTwoMaps.get("lps"));
+						fiveMaps[3].putAll(newTwoMaps.get("bps"));
+						fiveMaps[4].putAll(newTwoMaps.get("lps"));
 					}
 				}else if(acquireType == Constant.HTTP_ACQUIRE){															//远程Http调用获取
-					Map<String, String> httpParams = HttpUtil.runHttpAction(acquireContent, twoMaps[0], twoMaps[1]);
+					Map<String, String> httpParams = HttpUtil.runHttpAction(acquireContent, fiveMaps[0], fiveMaps[1], fiveMaps[2], fiveMaps[3], fiveMaps[4]);
 					if(httpParams != null) {
-						twoMaps[1].putAll(httpParams);       //得到的httpParams作为局部变量，如果其有部分变量需要转为全局变量，则加PROCESSED_ACTION的脚本进行变量转移（可能将一个大的对象的属性取出来放到gps和lps中）
+						fiveMaps[4].putAll(httpParams);       //得到的httpParams作为局部变量，如果其有部分变量需要转为全局变量，则加PROCESSED_ACTION的脚本进行变量转移（可能将一个大的对象的属性取出来放到gps和lps中）
 					}
 				}
 			}
 		}
-		String currentValueStr = dialogState.getParamValueOfAMap(param, paramType, twoMaps[1]);							//先从局部变量池中取值，如果没有则从全局变量中取（但通常应该放在局部变量池中）
+		String currentValueStr = (String) fiveMaps[4].get("%" + param + "%");							//先从局部变量池中取值，如果没有则从全局变量中取（但通常应该放在局部变量池中）
 		logger.info(" -> Param Result : 从 局部变量池(lps) 中获取 {} 的值为：{} 。( 对比条件：{} {} {} )", param, currentValueStr, param, option, compareValueStr);
 		if(currentValueStr == null) {
 			currentValueStr = dialogState.getParamValue(param, paramType);	 											//这一行实际上就相当于从twoMaps[0]中尝试取值
-			logger.info(" -> Param Result : 从 全局变量池(gps) 中获取 {} 的值为：{} 。( 对比条件：{} {} {} )", param, currentValueStr, param, option, compareValueStr);
+			logger.info(" -> Param Result : 从 DS的4个变量池(pps/sps/cps/bps) 中获取 {} 的值为：{} 。( 对比条件：{} {} {} )", param, currentValueStr, param, option, compareValueStr);
 		}
 
-		if(currentValueStr == null) {
+		if(currentValueStr == null || currentValueStr.equals("null")) {
 			logger.error("Param Error     : {} 领域 {} 任务 {} 类型的 {} 变量，没有获得值，请管理员检查是否设置相关脚本或接口！", domain, task, paramType, param);
 			return false;
 		}
@@ -330,8 +339,8 @@ public class Neo4jServiceImpl implements GDBService {
 
 					boolean leftGE = compareValueStr.startsWith("[");
 					boolean leftGT = compareValueStr.startsWith("(");
-					boolean rightLT = compareValueStr.endsWith("]");
-					boolean rightLE = compareValueStr.endsWith(")");
+					boolean rightLE = compareValueStr.endsWith("]");
+					boolean rightLT = compareValueStr.endsWith(")");
 
 					boolean leftRes = false;
 					boolean rightRes = false;
@@ -355,8 +364,8 @@ public class Neo4jServiceImpl implements GDBService {
 
 					boolean leftGE = compareValueStr.startsWith("[");
 					boolean leftGT = compareValueStr.startsWith("(");
-					boolean rightLT = compareValueStr.endsWith("]");
-					boolean rightLE = compareValueStr.endsWith(")");
+					boolean rightLE = compareValueStr.endsWith("]");
+					boolean rightLT = compareValueStr.endsWith(")");
 
 					boolean leftRes = false;
 					boolean rightRes = false;
@@ -367,7 +376,7 @@ public class Neo4jServiceImpl implements GDBService {
 					if(rightLE) rightRes = currentValue > toValue;
 					else if(rightLT) rightRes = currentValue >= toValue;
 
-					return leftRes && rightRes;
+					return leftRes || rightRes;
 				}
 
 				case "is" : {   //is            （是）（比较值必须为字符串）
@@ -382,7 +391,7 @@ public class Neo4jServiceImpl implements GDBService {
 					Set<String> itemSet = new HashSet<>(Arrays.asList(items));
 					return itemSet.contains(currentValueStr);
 				}
-				case "nn" : {   //not in        （不包含于）（比较值必须为逗号隔开的字符串，各个字符串前后不要空格）
+				case "ni" : {   //not in        （不包含于）（比较值必须为逗号隔开的字符串，各个字符串前后不要空格）
 					String[] items = compareValueStr.split(",");
 					Set<String> itemSet = new HashSet<>(Arrays.asList(items));
 					return !itemSet.contains(currentValueStr);

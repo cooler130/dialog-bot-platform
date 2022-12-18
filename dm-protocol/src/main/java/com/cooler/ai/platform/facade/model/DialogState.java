@@ -26,6 +26,11 @@ public class DialogState implements Serializable{
     private String userId = null;
 
     /**
+     * 渠道标识
+     */
+    private String channel = null;
+
+    /**
      * 交互数据
      */
     private String interactiveData = null;
@@ -97,88 +102,92 @@ public class DialogState implements Serializable{
      * @param paramType
      */
     public void addToParamValueMap(String key, String value, String paramType){
-        ModelState<Map<String, String>> slotValueMapMS = modelStateMap.get(Constant.PARAM_VALUE_MAP);
-        if(slotValueMapMS == null){
-            slotValueMapMS = new BaseModelState<>();
-            slotValueMapMS.setT(new HashMap<>());
+        ModelState<Map<String, String>> paramMapMS = getParamMapMSByType(paramType);
+        if(paramMapMS == null){                     //传递的paramType不在 {PLATFORM_PARAM, SLOT_PARAM, CUSTOM_PARAM, BIZ_PARAM}，就加到业务变量池
+            paramMapMS = getParamMapMSByType(Constant.BIZ_PARAM);
         }
-        Map<String, String> slotValueMap = slotValueMapMS.getT();
-        switch (paramType){
-            case Constant.SLOT_PARAM : {
-                slotValueMap.put("@" + key + "@", value);
-                break;
-            }
-            case Constant.CUSTOM_PARAM : {
-                slotValueMap.put("#" + key + "#", value);
-                break;
-            }
-            case Constant.PLATFORM_PARAM: {
-                slotValueMap.put("$" + key + "$", value);
-                break;
-            }
-            case Constant.BIZ_PARAM: {
-                slotValueMap.put("%" + key + "%", value);
-                break;
-            }
-            default:{
-                slotValueMap.put("%" + key + "%", value);                   //默认是设置为业务变量
-            }
+        Map<String, String> paramMap = paramMapMS.getT();
+        if(paramType.equals(Constant.PLATFORM_PARAM)){                      //首选系统变量
+            key = "$" + key + "$";
+        }else if(paramType.equals(Constant.SLOT_PARAM)){
+            key = "@" + key + "@";
+        }else if(paramType.equals(Constant.CUSTOM_PARAM)){
+            key = "#" + key + "#";
+        } else if(paramType.equals(Constant.BIZ_PARAM)){                                                                //默认是BizMap
+            key = "%" + key + "%";
         }
+        paramMap.put(key, value);
     }
 
     /**
-     * 从dialogState中的 PARAM_VALUE_MAP 中取出指定类型的值
+     * 批量装载
+     * @param params
+     * @param paramType
+     */
+    public void addToParamValueMap(Map<String, String> params, String paramType){
+        ModelState<Map<String, String>> paramMapMS = getParamMapMSByType(paramType);
+        if(paramMapMS == null){                     //传递的paramType不在 {PLATFORM_PARAM, SLOT_PARAM, CUSTOM_PARAM, BIZ_PARAM}，就加到业务变量池
+            paramMapMS = getParamMapMSByType(Constant.BIZ_PARAM);
+        }
+        Map<String, String> paramMap = paramMapMS.getT();
+        paramMap.putAll(params);
+    }
+
+    /**
+     * 从dialogState中的 BIZ_PARAM_MAP 中取出指定类型的值
      * @param key
      * @param paramType
      * @return
      */
     public String getParamValue(String key, String paramType) {
-        ModelState<Map<String, String>> slotValueMapMS = modelStateMap.get(Constant.PARAM_VALUE_MAP);
-        if(slotValueMapMS == null){
-            slotValueMapMS = new BaseModelState<>();
-            slotValueMapMS.setT(new HashMap<>());
-            modelStateMap.put(Constant.PARAM_VALUE_MAP, slotValueMapMS);
-            return null;
+        ModelState<Map<String, String>> paramMapMS = getParamMapMSByType(paramType);
+        if(paramMapMS == null) return null;                 //传递的paramType不在 {PLATFORM_PARAM, SLOT_PARAM, CUSTOM_PARAM, BIZ_PARAM}
+        if(paramType.equals(Constant.PLATFORM_PARAM)){                      //首选系统变量
+            key = "$" + key + "$";
+        }else if(paramType.equals(Constant.SLOT_PARAM)){
+            key = "@" + key + "@";
+        }else if(paramType.equals(Constant.CUSTOM_PARAM)){
+            key = "#" + key + "#";
+        } else if(paramType.equals(Constant.BIZ_PARAM)){                                                                //默认是BizMap
+            key = "%" + key + "%";
         }
-        Map<String, String> slotValueMap = slotValueMapMS.getT();
-        return getParamValueOfAMap(key, paramType, slotValueMap);
+        Map<String, String> paramMap = paramMapMS.getT();
+        String paramValue = paramMap.get(key);
+        return paramValue;
     }
 
-    /**
-     * 从指定Map中取出指定类型的值
-     * @param key
-     * @param paramType
-     * @param paramMap
-     * @return
-     */
-    public String getParamValueOfAMap(String key, String paramType, Map<String, String> paramMap) {
-        if(paramMap == null) return null;
-        switch (paramType) {
-            case Constant.SLOT_PARAM: {
-                return paramMap.get("@" + key + "@");
+    private ModelState<Map<String, String>> getParamMapMSByType(String paramType){
+        ModelState<Map<String, String>> paramMapMS = null;
+        if(paramType.equals(Constant.PLATFORM_PARAM)){                      //首选系统变量
+            paramMapMS = modelStateMap.get(Constant.PLATFORM_PARAM_MAP);
+            if(paramMapMS == null){
+                paramMapMS = new BaseModelState<>();
+                paramMapMS.setT(new HashMap<>());
+                modelStateMap.put(Constant.PLATFORM_PARAM_MAP, paramMapMS);
             }
-            case Constant.CUSTOM_PARAM: {
-                return paramMap.get("#" + key + "#");
+        }else if(paramType.equals(Constant.SLOT_PARAM)){
+            paramMapMS = modelStateMap.get(Constant.SLOT_PARAM_MAP);
+            if(paramMapMS == null){
+                paramMapMS = new BaseModelState<>();
+                paramMapMS.setT(new HashMap<>());
+                modelStateMap.put(Constant.SLOT_PARAM_MAP, paramMapMS);
             }
-            case Constant.PLATFORM_PARAM: {
-                return paramMap.get("$" + key + "$");
+        }else if(paramType.equals(Constant.CUSTOM_PARAM)){
+            paramMapMS = modelStateMap.get(Constant.CUSTOM_PARAM_MAP);
+            if(paramMapMS == null){
+                paramMapMS = new BaseModelState<>();
+                paramMapMS.setT(new HashMap<>());
+                modelStateMap.put(Constant.CUSTOM_PARAM_MAP, paramMapMS);
             }
-            case Constant.BIZ_PARAM: {
-                return paramMap.get("%" + key + "%");
-            }
-            default: {
-                String value = paramMap.get("@" + key + "@");
-                if (value == null) {
-                    value = paramMap.get("%" + key + "%");
-                }
-                if (value == null) {
-                    value = paramMap.get("#" + key + "#");
-                }
-                if (value == null) {
-                    value = paramMap.get("$" + key + "$");
-                }
-                return value + "";
+        } else if(paramType.equals(Constant.BIZ_PARAM)){                                                                //默认是BizMap
+            paramMapMS = modelStateMap.get(Constant.BIZ_PARAM_MAP);
+            if(paramMapMS == null){
+                paramMapMS = new BaseModelState<>();
+                paramMapMS.setT(new HashMap<>());
+                modelStateMap.put(Constant.BIZ_PARAM_MAP, paramMapMS);
             }
         }
+        return paramMapMS;
     }
+
 }

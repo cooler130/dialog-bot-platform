@@ -190,7 +190,20 @@ public class HttpUtil {
      * @param localParams       局部变量池
      * @return  返回一个Map，Map的key为业务名称，而value格式不定
      */
-    public static Map<String, String> runHttpAction(String actionContent, Map<String, String> globalParams, Map<String, String> localParams) {
+    /**
+     * 执行http动作，并将httpParams变量值输出
+     * @param actionContent     http调用数据
+     * @param pps
+     * @param cps
+     * @param sps
+     * @param bps   业务变量池
+     * @param lps   局部变量池
+     * @return  返回一个Map，Map的key为业务名称，而value格式不定
+     */
+    public static Map<String, String> runHttpAction(String actionContent,
+                                                    Map<String, String> pps, Map<String, String> cps,
+                                                    Map<String, String> sps, Map<String, String> bps,
+                                                    Map<String, String> lps) {
         if(actionContent == null || actionContent.length() == 0) return null;
 
         HttpScriptBean httpScriptBean = JSONObject.parseObject(actionContent, HttpScriptBean.class);
@@ -202,7 +215,7 @@ public class HttpUtil {
         Integer connectTimeout = httpScriptBean.getConnectTimeout();
         Integer connectionRequestTimeout = httpScriptBean.getConnectionRequestTimeout();
 
-        requestBodyJS = StringUtil.replaceVariableValues(requestBodyJS, globalParams, localParams);                     //全局和局部变量值替代requestBody中的变量
+        requestBodyJS = StringUtil.replaceVariableValues(requestBodyJS, pps, cps, sps, bps, lps);                     //全局和局部变量值替代requestBody中的变量
         try {
             String responseRes = null;
             if(method.equals(POST)){
@@ -224,66 +237,5 @@ public class HttpUtil {
         return null;
     }
 
-
-//    public static void main(String[] args){
-//        String paramFile = "";
-//        String questionFile = "";
-//        FileReader fr = null;
-//        FileReader fr2 = null;
-//        BufferedReader br = null;
-//        try{
-//            fr = new FileReader(new File(paramFile));
-//            Properties properties = new Properties();
-//            properties.load(fr);
-//            String url = properties.getProperty("url");
-//
-//            fr2 = new FileReader(new File(questionFile));
-//            br = new BufferedReader(fr2);
-//            String line = null;
-//            boolean hasExtendParam = false;
-//            while((line = br.readLine()) != null){
-//                line = line.trim();
-//                if(line.startsWith("#") || line.equals("")){
-//                    continue;
-//                }
-//                if(line.startsWith("p:")){
-//                    hasExtendParam = true;
-//                    line = line.replace("p:", "");
-//                }
-//                String question = line;
-//                JSONObject joInput = new JSONObject();
-//                joInput.put("question", question);
-//
-//                if(hasExtendParam){
-//                    Map<String, String> extendParam = new HashMap<>();
-//                    extendParam.put("pinBlock", question);
-//                    joInput.put("extendParam", extendParam);
-//                }
-//
-//                String request = joInput.toJSONString();
-//                String response = HttpUtil.doPost(url, request, null, null, null);
-//
-//                //todo:解析response
-//                hasExtendParam = false;
-//                Thread.sleep(500);
-//            }
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        } finally {
-//            try {
-//                fr2.close();
-//                br.close();
-//                fr.close();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    }
 
 }

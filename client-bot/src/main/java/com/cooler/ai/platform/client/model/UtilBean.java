@@ -8,9 +8,7 @@ import com.cooler.ai.platform.facade.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class UtilBean {
@@ -112,7 +110,7 @@ public class UtilBean {
         metaMap.put(PC.DOMAIN_NAME, domainName);
         metaMap.put(PC.TASK_NAME, taskName);
         metaMap.put(PC.INTENT_NAME, intentName);
-        metaMap.put(Constant.PARAM_VALUE_MAP, JSON.toJSONString(slotValueMap));
+        metaMap.put(Constant.BIZ_PARAM_MAP, JSON.toJSONString(slotValueMap));
         return metaMap;
     }
 

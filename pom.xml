@@ -38,6 +38,8 @@
 
         <module>client-biz</module>
         <module>client-bot</module>
+
+        <module>dialog-bot-tool</module>
     </modules>
 
 
