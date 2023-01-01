@@ -149,9 +149,7 @@ public class Neo4jServiceImpl implements GDBService {
 					SEGMENT : for (Path.Segment segment : path) {                       //取出当前Path的一个段Segment
 						Node end = segment.end();
 						String nodeClass = end.get("class").asString();
-						String nodeValue = end.get("value").asString();
-						if(nodeClass.equals("State") && nodeValue.equals(Constant.GLOBAL_END)) return path;               //循环出口：如果end节点是一个状态节点，则说明已经走到此Path尾端，则此Path完全可行，返回此Path
-						//todo:上面逻辑不清楚了，回想一下为何有上面的逻辑。
+						if(nodeClass.equals("State")) return path;               //循环出口：如果此段的end节点是一个状态节点（根据查询语句，一定会是状态节点的），则返回此Path
 					}
 				}
 			}

@@ -53,7 +53,7 @@ public class BuRouter {
     static String[] answers4a = {
             "我的红包怎么用不了啊？",
             "不是",
-            "卡通",
+//            "卡通",
             ""
     };
 
@@ -71,6 +71,14 @@ public class BuRouter {
             ""
     };
 
+    static String[] answers7 = {
+            "我的红包怎么用不了啊？",
+            "不是",
+            "我说的是我昨天的外卖订单。",
+            "是的",
+            ""
+    };
+
 
     public static Map<String, String[]> answersGroup = new HashMap<String, String[]>() {{
         put("业务路由成功（标准问+业务）", answers1);
@@ -81,6 +89,7 @@ public class BuRouter {
         put("业务路由成功（标准问+订单1+无意图）", answers4a);
         put("转人工两次", answers5);
         put("业务路由失败（标准问错2次）", answers6);
+        put("订单路由失败（标准问错2次）", answers7);
     }};
 
 }
