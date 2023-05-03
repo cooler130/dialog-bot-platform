@@ -1,0 +1,55 @@
+package com.cooler.ai.distribution.service.entity_json;
+
+import com.alibaba.fastjson.JSONObject;
+import com.cooler.ai.distribution.entity.NLUIntent;
+import com.cooler.ai.distribution.service.NLUIntentService;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
+
+@Service("jsonNLUIntentService")
+public class NLUIntentServiceImpl implements NLUIntentService {
+
+    private static Map<String, String> globalMap = EntityConstant.globalMap;
+
+    @Override
+    public NLUIntent selectByTwoNames(String nluIntentName, String nluDomainName) {
+        NLUIntent nluIntent = null;
+        String json = globalMap.get("NLUIntent_" + nluDomainName + "_" + nluIntentName);
+        if(json != null){
+            nluIntent = JSONObject.parseObject(json, NLUIntent.class);
+        }
+        return nluIntent;
+    }
+
+    @Override
+    public List<NLUIntent> selectByNluIntentName(String nluIntentName) {
+        List<NLUIntent> nluIntents = null;
+        String json = globalMap.get("NLUIntent_" + nluIntentName);
+        if(json != null){
+            nluIntents = JSONObject.parseArray(json, NLUIntent.class);
+        }
+        return nluIntents;
+    }
+
+    @Override
+    public List<NLUIntent> selectByIntentId(Integer intentId) {
+        List<NLUIntent> nluIntents = null;
+        String json = globalMap.get("NLUIntent_" + intentId);
+        if(json != null){
+            nluIntents = JSONObject.parseArray(json, NLUIntent.class);
+        }
+        return nluIntents;
+    }
+
+    @Override
+    public void insert(NLUIntent nluIntent) {
+            //todo:如果用到，则考虑添加上面key值的对象。
+    }
+
+    @Override
+    public Integer selectMaxId() {
+        return null;
+    }
+}

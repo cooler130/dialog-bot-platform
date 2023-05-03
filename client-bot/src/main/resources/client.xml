@@ -12,7 +12,7 @@
 
     <!-- 要引用的服务，注意这里的每一个服务都应该声明一个group，group是一个分组名，同时也是bot名，因为每一个bot实际上发布的服务类和服务名就是一个，就是dmFacade，在服务端设置了group，所以只能靠此处的group区分了。 -->
 
-    <dubbo:reference id="distributionCenterFacade" interface="com.cooler.ai.platform.facade.DistributionCenterFacade" group="distribution" version="1.0-SNAPSHOT" />
+    <dubbo:reference id="distributionCenterFacade" interface="com.cooler.ai.distribution.facade.DistributionCenterFacade" group="distribution" version="1.0-SNAPSHOT" />
 
 
 

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cooler.ai.dm.dao.ParamMapper" >
+  <resultMap id="BaseResultMap" type="com.cooler.ai.dm.entity.Param" >
+    <constructor >
+      <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="domain_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="task_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="param_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="acquire_type" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="group_num" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="acquire_content" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="version" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="enable" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="msg" jdbcType="VARCHAR" javaType="java.lang.String" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, domain_name, task_name, param_name, acquire_type, group_num, acquire_content, version,
+    enable, msg
+  </sql>
+
+  <insert id="insert" parameterType="com.cooler.ai.dm.entity.Param" useGeneratedKeys="true" keyProperty="id">
+    insert into param (id, domain_name, task_name,
+      param_name, acquire_type, group_num, 
+      acquire_content, version, enable, msg
+      )
+    values (#{id,jdbcType=INTEGER}, #{domainName,jdbcType=VARCHAR}, #{taskName,jdbcType=VARCHAR},
+      #{paramName,jdbcType=VARCHAR}, #{acquireType,jdbcType=INTEGER}, #{groupNum,jdbcType=INTEGER}, 
+      #{acquireContent,jdbcType=VARCHAR}, #{version,jdbcType=VARCHAR}, #{enable,jdbcType=INTEGER}, #{msg,jdbcType=VARCHAR}
+      )
+  </insert>
+
+  <!-- 业务 -->
+  <select id="getConditionParams" resultMap="BaseResultMap" >
+    select
+    <include refid="Base_Column_List" />
+    from param
+    where domain_name = #{domainName,jdbcType=VARCHAR}
+    and task_name = #{taskName,jdbcType=VARCHAR}
+    and param_name = #{paramName,jdbcType=VARCHAR}
+    and version = #{version,jdbcType=VARCHAR}
+    and enable = 1
+  </select>
+
+</mapper>

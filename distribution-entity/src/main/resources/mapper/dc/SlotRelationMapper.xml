@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cooler.ai.distribution.dao.SlotRelationMapper" >
+  <resultMap id="BaseResultMap" type="com.cooler.ai.distribution.entity.SlotRelation" >
+    <constructor >
+      <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="nlu_slot_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="slot_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="enable" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="msg" jdbcType="VARCHAR" javaType="java.lang.String" />
+    </constructor>
+  </resultMap>
+
+  <sql id="Base_Column_List" >
+    id, nlu_slot_id, slot_id, enable, msg
+  </sql>
+
+  <!-- 业务相关 -->
+  <select id="selectBySlotIds" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from slot_relation
+    where slot_id in
+    <foreach collection="slotIds" item="slotId" open="(" separator="," close=")">
+      #{slotId,jdbcType=INTEGER}
+    </foreach>
+    and enable = 1
+  </select>
+
+</mapper>

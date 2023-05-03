@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cooler.ai.dm.dao.PolicyConditionMapper" >
+  <resultMap id="BaseResultMap" type="com.cooler.ai.dm.entity.PolicyCondition" >
+    <constructor >
+      <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="policy_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="condition_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="condition_whether" jdbcType="TINYINT" javaType="java.lang.Byte" />
+      <arg column="condition_text" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="domain_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="task_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="version" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="enable" jdbcType="TINYINT" javaType="java.lang.Byte" />
+      <arg column="msg" jdbcType="VARCHAR" javaType="java.lang.String" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, policy_id, condition_name, condition_whether, condition_text, domain_name, task_name, version, enable, msg
+  </sql>
+
+  <insert id="insert" parameterType="com.cooler.ai.dm.entity.PolicyCondition" useGeneratedKeys="true" keyProperty="id">
+    insert into policy_condition (policy_id, condition_name,
+      condition_whether, condition_text, domain_name, task_name, version, enable, msg)
+    values (#{policyId,jdbcType=INTEGER}, #{conditionName,jdbcType=VARCHAR},
+      #{conditionWhether,jdbcType=TINYINT}, #{conditionText,jdbcType=VARCHAR}, #{domainName,jdbcType=VARCHAR},
+      #{taskName,jdbcType=VARCHAR}, #{version,jdbcType=VARCHAR}, #{enable,jdbcType=TINYINT}, #{msg,jdbcType=VARCHAR})
+  </insert>
+
+  <!-- 业务 -->
+  <select id="getConditionByPolicyId" resultMap="BaseResultMap"  >
+    select
+    <include refid="Base_Column_List" />
+    from policy_condition
+    where policy_id in
+    <foreach collection="policyIds" open="(" separator="," close=")" item="policyId">
+      #{policyId,jdbcType=INTEGER}
+    </foreach>
+    and enable = 1
+  </select>
+
+</mapper>

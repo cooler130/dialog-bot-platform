@@ -27,7 +27,7 @@
 
         <dependency>
             <groupId>com.cooler.dialogbot.dm</groupId>
-            <artifactId>dm-entity2</artifactId>
+            <artifactId>dm-entity</artifactId>
             <version>${parent.version}</version>
         </dependency>
 

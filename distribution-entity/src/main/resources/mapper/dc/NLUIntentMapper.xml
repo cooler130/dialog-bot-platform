@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cooler.ai.distribution.dao.NLUIntentMapper" >
+  <resultMap id="BaseResultMap" type="com.cooler.ai.distribution.entity.NLUIntent" >
+    <constructor >
+      <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="nlu_intent_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="nlu_domain_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="nlu_intent_type" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="intent_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="version" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="enable" jdbcType="TINYINT" javaType="java.lang.Byte" />
+      <arg column="msg" jdbcType="VARCHAR" javaType="java.lang.String" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, nlu_intent_name, nlu_domain_name, nlu_intent_type, intent_id, version, enable, msg
+  </sql>
+
+  <insert id="insert" parameterType="com.cooler.ai.distribution.entity.NLUIntent" useGeneratedKeys="true" keyProperty="id">
+    insert into nlu_intent (id, nlu_intent_name, nlu_domain_name, 
+      nlu_intent_type, intent_id, version, 
+      enable, msg)
+    values (#{id,jdbcType=INTEGER}, #{nluIntentName,jdbcType=VARCHAR}, #{nluDomainName,jdbcType=VARCHAR}, 
+      #{nluIntentType,jdbcType=INTEGER}, #{intentId,jdbcType=INTEGER}, #{version,jdbcType=VARCHAR}, 
+      #{enable,jdbcType=TINYINT}, #{msg,jdbcType=VARCHAR})
+  </insert>
+
+  <!--业务相关 -->
+  <select id="selectByTwoNames" resultMap="BaseResultMap" >
+    select
+    <include refid="Base_Column_List" />
+    from nlu_intent
+    where nlu_intent_name = #{nluIntentName,jdbcType=VARCHAR}
+      and nlu_domain_name = #{nluDomainName,jdbcType=VARCHAR}
+      and enable = 1
+  </select>
+
+  <select id="selectByNluIntentName" resultMap="BaseResultMap" >
+    select
+    <include refid="Base_Column_List" />
+    from nlu_intent
+    where nlu_intent_name = #{nluIntentName,jdbcType=VARCHAR}
+      and enable = 1
+  </select>
+
+  <select id="selectByIntentId" resultMap="BaseResultMap" >
+    select
+    <include refid="Base_Column_List" />
+    from nlu_intent
+    where intent_id = #{intentId,jdbcType=INTEGER}
+      and enable = 1
+  </select>
+
+  <select id="selectMaxId" resultType="java.lang.Integer" >
+    select
+      max(id)
+    from nlu_intent
+  </select>
+
+
+
+</mapper>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cooler.ai.distribution.dao.IntentMapper" >
+  <resultMap id="BaseResultMap" type="com.cooler.ai.distribution.entity.Intent" >
+    <constructor >
+      <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="intent_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="domain_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="task_names" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="intent_type" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="version" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="enable" jdbcType="TINYINT" javaType="java.lang.Byte" />
+      <arg column="msg" jdbcType="VARCHAR" javaType="java.lang.String" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, intent_name, domain_name, task_names, intent_type, version, enable, msg
+  </sql>
+
+  <insert id="insert" parameterType="com.cooler.ai.distribution.entity.Intent" useGeneratedKeys="true" keyProperty="id">
+    insert into intent (id, intent_name, domain_name, 
+      task_names, intent_type, version, 
+      enable, msg)
+    values (#{id,jdbcType=INTEGER}, #{intentName,jdbcType=VARCHAR}, #{domainName,jdbcType=VARCHAR}, 
+      #{taskNames,jdbcType=VARCHAR}, #{intentType,jdbcType=INTEGER}, #{version,jdbcType=VARCHAR}, 
+      #{enable,jdbcType=TINYINT}, #{msg,jdbcType=VARCHAR})
+  </insert>
+
+  <!-- 业务相关 -->
+  <select id="selectByIntentId" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select
+    <include refid="Base_Column_List" />
+    from intent
+    where id = #{intentId,jdbcType=INTEGER}
+      and enable = 1
+  </select>
+
+  <select id="selectByTwoNames" resultMap="BaseResultMap" >
+    select
+    <include refid="Base_Column_List" />
+    from intent
+    where domain_name = #{domainName,jdbcType=VARCHAR}
+      and intent_name = #{intentName,jdbcType=VARCHAR}
+      and enable = 1
+  </select>
+
+  <select id="selectMaxId" resultType="java.lang.Integer" >
+    select
+      max(id)
+    from intent
+  </select>
+
+</mapper>

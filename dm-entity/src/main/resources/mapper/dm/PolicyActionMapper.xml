@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cooler.ai.dm.dao.PolicyActionMapper" >
+  <resultMap id="BaseResultMap" type="com.cooler.ai.dm.entity.PolicyAction" >
+    <constructor >
+      <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="action_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="policy_id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="action_type" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="group_num" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="action_content" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="domain_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="task_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="version" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="enable" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="msg" jdbcType="VARCHAR" javaType="java.lang.String" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, action_name, policy_id, action_type, group_num, action_content, domain_name, task_name, version, enable, msg
+  </sql>
+
+  <select id="getDefaultPolicyAction" resultMap="BaseResultMap" >
+    select 
+    <include refid="Base_Column_List" />
+    from policy_action
+    where action_name = 'default_action'
+    and domain_name = #{domainName,jdbcType=VARCHAR}
+    and task_name = #{taskName,jdbcType=VARCHAR}
+    and version = #{version,jdbcType=VARCHAR}
+    and enable = 1
+  </select>
+
+  <insert id="insert" parameterType="com.cooler.ai.dm.entity.PolicyAction" useGeneratedKeys="true" keyProperty="id">
+    insert into policy_action (id, action_name, policy_id,
+      action_type, group_num, action_content, domain_name, task_name, version,
+      enable, msg)
+    values (#{id,jdbcType=INTEGER}, #{actionName,jdbcType=VARCHAR}, #{policyId,jdbcType=INTEGER},
+      #{actionType,jdbcType=INTEGER}, #{groupNum,jdbcType=INTEGER}, #{actionContent,jdbcType=VARCHAR},
+      #{domainName,jdbcType=VARCHAR}, #{taskName,jdbcType=VARCHAR}, #{version,jdbcType=VARCHAR},
+      #{enable,jdbcType=INTEGER}, #{msg,jdbcType=VARCHAR})
+  </insert>
+
+  <!-- 业务 -->
+  <select id="getByPolicyId" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select
+    <include refid="Base_Column_List" />
+    from policy_action
+    where policy_id = #{policyId,jdbcType=INTEGER} and enable = 1
+  </select>
+</mapper>

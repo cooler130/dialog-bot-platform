@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cooler.ai.distribution.dao.NLUSlotMapper" >
+  <resultMap id="BaseResultMap" type="com.cooler.ai.distribution.entity.NLUSlot" >
+    <constructor >
+      <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="nlu_slot_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="nlu_domain_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="nlu_slot_type" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="enable" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="msg" jdbcType="VARCHAR" javaType="java.lang.String" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, nlu_slot_name, nlu_domain_name, nlu_slot_type, enable, msg
+  </sql>
+
+  <!-- 业务相关 -->
+  <select id="selectByIds" resultMap="BaseResultMap" >
+    select
+    <include refid="Base_Column_List" />
+    from nlu_slot
+    where enable = 1 AND id IN
+    <foreach collection="ids" item="id" open="(" separator="," close=")">
+      #{id,jdbcType=INTEGER}
+    </foreach>
+
+  </select>
+
+
+</mapper>

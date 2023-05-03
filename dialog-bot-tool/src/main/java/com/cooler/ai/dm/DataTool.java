@@ -1,11 +1,19 @@
 package com.cooler.ai.dm;
 
+
+
+import com.cooler.ai.distribution.entity.DataVersion;
+import com.cooler.ai.distribution.entity.Intent;
+import com.cooler.ai.distribution.entity.NLUIntent;
+import com.cooler.ai.distribution.service.DataVersionService;
+import com.cooler.ai.distribution.service.IntentService;
+import com.cooler.ai.distribution.service.NLUIntentService;
+import com.cooler.ai.dm.model.IntentSetNode;
+import com.cooler.ai.dm.model.StateNode;
 import com.cooler.ai.dm.entity.Param;
 import com.cooler.ai.dm.entity.Policy;
 import com.cooler.ai.dm.entity.PolicyAction;
 import com.cooler.ai.dm.entity.PolicyCondition;
-import com.cooler.ai.dm.model.IntentSetNode;
-import com.cooler.ai.dm.model.StateNode;
 import com.cooler.ai.dm.service.ParamService;
 import com.cooler.ai.dm.service.PolicyActionService;
 import com.cooler.ai.dm.service.PolicyConditionService;
@@ -41,25 +49,64 @@ public class DataTool {
 
     public static final Driver neo4jDriver = GraphDatabase.driver( "bolt://localhost:7687", AuthTokens.basic( "neo4j", "zs86529374" ) );
 
+    public static final String domainName = "boss_hiring";
+    public static final String taskName = "collect_resume";
+    public static final String versionUpdateItems = "数据初始化";                //更新点先设置到此处
+    public static final boolean smallVersionUpdate = true;              //是否小版本升级（小版本升级 oldVerion + 0.1，大版本升级 float(oldVerion) + 1
+
+    public static final int estimatedIntentCount = 100;
+
+
     public static void main(String[] args) {
 
-        BeanFactory beanFactory = new ClassPathXmlApplicationContext("applicationContext.xml");
-        PolicyService policyService = (PolicyService) beanFactory.getBean("policyService");
-        PolicyConditionService policyConditionService = (PolicyConditionService) beanFactory.getBean("policyConditionService");
-        PolicyActionService policyActionService = (PolicyActionService) beanFactory.getBean("policyActionService");
-        ParamService paramService = (ParamService) beanFactory.getBean("paramService");
+        BeanFactory beanFactory_DC = new ClassPathXmlApplicationContext("applicationContext-DC.xml");
+        String version = createDataVersion(beanFactory_DC);
+        System.out.println("1.DataVersion 数据生成完毕！");
+
+        BeanFactory beanFactory_DM = new ClassPathXmlApplicationContext("applicationContext-DM.xml");
+        Map<String, String> intentMap = createPolicyBizData(beanFactory_DM, version);
+        System.out.println("2.DataVersion、Policy、PolicyCondition、PolicyAction、Param 初步数据生成完毕！");
+
+        createIntentBizData(beanFactory_DC, version, intentMap);
+        System.out.println("3.nluIntent、intent 数据生成完毕！");
+    }
+
+    //-----------------以下为3个子步骤
+
+    private static String createDataVersion(BeanFactory beanFactory_DC) {
+        DataVersionService dataVersionService = (DataVersionService) beanFactory_DC.getBean("dataVersionService");
+
+        DataVersion latestDataVersion = dataVersionService.selectLatestVersion(domainName, taskName);
+        Float latestVersionCode = 1.0f;
+        if(latestDataVersion != null && latestDataVersion.getVersionCode() != null){
+            latestVersionCode = latestDataVersion.getVersionCode();
+        }
+        Float versionCode = smallVersionUpdate ? latestVersionCode + 0.1f : (float)Math.floor(latestVersionCode) + 1.0f;
+        String versionName = "V" + versionCode;
+//        String newVersionName = "xxxVersion";
+        //新建的DataVersion，自己将升级项目点填到versionUpdateItemes变量，默认在线、不稳定。
+        DataVersion newDataVersion = new DataVersion(null, versionName, versionCode, domainName, taskName, (byte)1, (byte)0, versionUpdateItems, new Date(), new Date());
+        dataVersionService.insert(newDataVersion);
+        return versionName;
+    }
+
+    private static Map<String, String> createPolicyBizData(BeanFactory beanFactory_DM, String version) {
+        PolicyService policyService = (PolicyService) beanFactory_DM.getBean("policyService");
+        PolicyConditionService policyConditionService = (PolicyConditionService) beanFactory_DM.getBean("policyConditionService");
+        PolicyActionService policyActionService = (PolicyActionService) beanFactory_DM.getBean("policyActionService");
+        ParamService paramService = (ParamService) beanFactory_DM.getBean("paramService");
 
         //0.设置好默认策略和默认动作
-        String domainName = "burouter2";
-        String taskName = "bu_route2";
-
-        policyService.insert(new Policy(1,"default_policy", domainName, taskName, "global_any", "no_intent", "global_end", (byte)1, "默认兜底策略"));
-        policyActionService.insert(new PolicyAction(1, "default_action", 1, 2, 1, "抱歉！没有理解您的意思，请换个说法再说一次吧！", 1, "全局兜底动作"));
+        Policy defaultPolicy = new Policy(null,"default_policy", domainName, taskName, "global_any", "no_intent", "global_error",  version, (byte) 1, "默认兜底策略");
+        policyService.insert(defaultPolicy);
+        PolicyAction defaultPolicyAction = new PolicyAction(null, "default_action", defaultPolicy.getId(), 2, 1, "抱歉！没有理解您的意思，请换个说法再说一次吧！", domainName, taskName, version, 1, "默认兜底动作");
+        policyActionService.insert(defaultPolicyAction);
 
         //1.根据domain、task查询所有的状态，开始遍历这些状态；
         List<StateNode> stateNodes = DataTool.selectAllStatesFromDomainTask(domainName, taskName);
         Map<String, Param> paramsMap = new HashMap<>();
 
+        Map<String, String> intentMap = new HashMap<>();                                    //为第三步提供数据
         //2.查询一个状态出发的所有意图；
         for (StateNode stateNode : stateNodes) {
             String fromState = stateNode.getValue();
@@ -67,7 +114,23 @@ public class DataTool {
 
             for (IntentSetNode intentSetNode : intentSetNodes) {
                 String suid = intentSetNode.getSUID();
+
                 String intentNames = intentSetNode.getValue();
+                String intentSetText = intentSetNode.getText();
+                String[] intentNameArray = intentNames.split(",");
+                String[] intentTextArray = intentSetText.split(",");
+                int size = intentNameArray.length;
+                for (int i = 0; i < size; i++) {
+                    String intent_i = intentNameArray[i].trim();
+                    if(intent_i != null && intent_i.length() > 0){
+                        int textLength = intentTextArray.length;
+                        if(i < textLength - 1){
+                            intentMap.put(intent_i, intentTextArray[i].trim());
+                        }else{
+                            intentMap.put(intent_i, intent_i);
+                        }
+                    }
+                }
 
                 //3.查询一个状态下所有意图出发到所有状态结尾的路径，两种情况：不含条件和含条件。（得到fromState、intentNames、toState，记录路径下所有Conditions）
                 String directToStatePathFromIntent = "match (is:IntentSet{SUID:" + suid + "}), paths = ((is)-[]->(s:State)) return paths";
@@ -83,7 +146,7 @@ public class DataTool {
                 Map<String, List<PolicyCondition>> policyConditionMap = new HashMap<>();
                 Map<String, PolicyAction> policyActionMap = new HashMap<>();
                 //4.输入所有path，将path转为Policy，同时记录和每一个Policy关联的PolicyCondition、PolicyAction以及各个Param，将这4种对象插入数据库。
-                List<Policy> policies = convertPathToPolicy(domainName, taskName, fromState, intentNames, paths, policyConditionMap, policyActionMap, paramsMap);
+                List<Policy> policies = convertPathToPolicy(domainName, taskName, version, fromState, intentNames, paths, policyConditionMap, policyActionMap, paramsMap);
                 for (Policy policy : policies) {
                     policyService.insert(policy);                                                                       //插入policy
 
@@ -118,8 +181,39 @@ public class DataTool {
         for (Param param : params) {
             paramService.insert(param);
         }
-        System.out.println("Policy、PolicyCondition、PolicyAction、Param 初步数据生成完毕！");
+
+        return intentMap;
     }
+
+    private static void createIntentBizData(BeanFactory beanFactory_DC, String version, Map<String, String> intentMap) {
+        IntentService intentService = (IntentService) beanFactory_DC.getBean("intentService");
+        NLUIntentService nluIntentService = (NLUIntentService) beanFactory_DC.getBean("nluIntentService");
+
+        //1.intentService先搜索domainName+intentName + enable之下所有记录，形成 Map<domainName_intentName, Intent>
+        //2.遍历所有value，匹配intentName，匹配上则将本此的Intent中的taskame加进taskNames，新增一个记录，将旧intent软删除enable=-1。
+
+        if(intentMap != null && intentMap.size() > 0){
+            for (String intentName : intentMap.keySet()) {
+                Intent intent = new Intent(null, intentName, domainName, taskName, 1, version, (byte) 1, intentMap.get(intentName));
+                intentService.insert(intent);
+
+                NLUIntent nluIntent = new NLUIntent(null, intentName, domainName, 1, intent.getId(), version, (byte) 1, intentMap.get(intentName));
+                nluIntentService.insert(nluIntent);
+            }
+        }
+        Integer maxIntentId = intentService.selectMaxId();
+        Integer newIntentId = (int)(100 * Math.floor(maxIntentId / 100)) + 100;
+        Intent gapIntent = new Intent(newIntentId, "--", "--", "--", -1, "--", (byte) 0, "领域分界 - 前领域预留100");
+        intentService.insert(gapIntent);
+
+        Integer maxNLUInetentId = intentService.selectMaxId();
+        Integer newNLUIntentId = (int)(100 * Math.floor(maxNLUInetentId / 100)) + 100;
+        NLUIntent nluIntent = new NLUIntent(newNLUIntentId, "--", "--", -1, gapIntent.getId(), "--", (byte) 0, "领域分界 - 前领域预留100");
+        nluIntentService.insert(nluIntent);
+
+    }
+
+    //-----------------以下为查询neo4j数据方法
 
     private static List<StateNode> selectAllStatesFromDomainTask(String domainName, String taskName) {
         String queryForIntents = "match data=(s:State{domain:'" + domainName + "', task:'" + taskName + "'}) return s";
@@ -202,7 +296,7 @@ public class DataTool {
         return paths;
     }
 
-    private static List<Policy> convertPathToPolicy(String domainName, String taskName, String fromState, String intentNames, List<Path> paths,
+    private static List<Policy> convertPathToPolicy(String domainName, String taskName, String version, String fromState, String intentNames, List<Path> paths,
                                                     Map<String, List<PolicyCondition>> policyConditionMap, Map<String, PolicyAction> policyActionMap, Map<String, Param> paramsMap) {
         if(paths == null || paths.size() == 0) return new ArrayList<>();
         List<Policy> policies = new ArrayList<>();
@@ -213,6 +307,7 @@ public class DataTool {
             policy.setPolicyName(policyName);
             policy.setDomainName(domainName);
             policy.setTaskName(taskName);
+            policy.setVersion(version);
             policy.setFromState(fromState);
             policy.setIntentNames(intentNames);
             policy.setEnable((byte)1);
@@ -235,6 +330,9 @@ public class DataTool {
                         else if(whether.equals("N")) conditionWhether = -1;
                         policyCondition.setConditionWhether((byte)conditionWhether);
                     }
+                    policyCondition.setDomainName(domainName);
+                    policyCondition.setTaskName(taskName);
+                    policyCondition.setVersion(version);
                     policyCondition.setConditionText(start.get("text").asString());
                     policyCondition.setEnable((byte)1);
                     policyCondition.setMsg("条件 -> " + conditionName + " (" + policyCondition.getConditionWhether() + ") : [ " + policyCondition.getConditionText() + " ]");
@@ -248,8 +346,8 @@ public class DataTool {
                     String param = start.get("param").asString();
                     if(paramsMap.get(param) == null){
                         //每一个变量添加两个获取方法
-                        paramsMap.put(domainName + "_" + taskName + "_" + param + "_HTTP", new Param(null, domainName, taskName, param, 2, 1, "", 1,   "HTTP动作     -> " + type + " 类型变量:" + param ));
-                        paramsMap.put(domainName + "_" + taskName + "_" + param + "_SCRIPT", new Param(null, domainName, taskName, param, 1, 2, "", 1, "SCRIPT动作 -> " + type + " 类型变量:" + param ));
+                        paramsMap.put(domainName + "_" + taskName + "_" + version + "_" + param + "_HTTP", new Param(null, domainName, taskName, param, 2, 1, "", version,  1,   "HTTP动作     -> " + type + " 类型变量:" + param ));
+                        paramsMap.put(domainName + "_" + taskName + "_" + version + "_" + param + "_SCRIPT", new Param(null, domainName, taskName, param, 1, 2, "", version,  1,   "SCRIPT动作     -> " + type + " 类型变量:" + param ));
                     }
                 }else if(aClass.equals("State")){
                     policy.setToState(start.get("value").asString());
@@ -263,7 +361,7 @@ public class DataTool {
                 }
             }
 
-            policyActionMap.put(policy.getPolicyName(), new PolicyAction(null, "PolicyAction_" + uuid, null, 2, 2, "", 1,
+            policyActionMap.put(policy.getPolicyName(), new PolicyAction(null, "PolicyAction_" + uuid, null, 2, 2, "", domainName, taskName, version, 1,
                     "交互动作 -> 起始状态： " + fromState + " 意图：" + intentNames + " 到结束状态：" + policy.getToState()));
             policy.setMsg("策略 -> 起始状态： " + fromState + " 意图：" + intentNames + " 到结束状态：" + policy.getToState());
             policies.add(policy);

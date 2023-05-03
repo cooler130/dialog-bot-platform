@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cooler.ai.distribution.dao.DataVersionMapper" >
+  <resultMap id="BaseResultMap" type="com.cooler.ai.distribution.entity.DataVersion" >
+    <constructor >
+      <idArg column="id" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="version_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="version_code" jdbcType="REAL" javaType="java.lang.Float" />
+      <arg column="domain_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="task_name" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="is_online" jdbcType="TINYINT" javaType="java.lang.Byte" />
+      <arg column="is_stable" jdbcType="TINYINT" javaType="java.lang.Byte" />
+      <arg column="version_update_items" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="create_time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
+      <arg column="update_time" jdbcType="TIMESTAMP" javaType="java.util.Date" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, version_name, version_code, domain_name, task_name, is_online, is_stable, version_update_items, create_time, update_time
+  </sql>
+
+  <update id="offlineUnstableVersion" parameterType="com.cooler.ai.distribution.entity.DataVersion" >
+    update data_version
+    set
+      is_online = 0,
+      update_time = NOW()
+    where domain_name = #{domainName,jdbcType=INTEGER} and task_name = #{taskName,jdbcType=VARCHAR} and is_stable = 0
+  </update>
+
+
+  <select id="selectOneVersion" resultMap="BaseResultMap" >
+    select
+    <include refid="Base_Column_List" />
+    from data_version
+    where domain_name = #{domainName,jdbcType=INTEGER}
+      and task_name = #{taskName,jdbcType=VARCHAR}
+      and version_name = #{versionName,jdbcType=VARCHAR}
+  </select>
+
+  <select id="selectLatestVersion" resultMap="BaseResultMap" >
+    select 
+    <include refid="Base_Column_List" />
+    from data_version
+    where id = (select max(id) from data_version where domain_name = #{domainName,jdbcType=INTEGER} and task_name = #{taskName,jdbcType=VARCHAR})
+  </select>
+
+  <select id="selectLatestStableVersion" resultMap="BaseResultMap" >
+    select
+    <include refid="Base_Column_List" />
+    from data_version
+    where id = (select max(id) from data_version where domain_name = #{domainName,jdbcType=INTEGER} and task_name = #{taskName,jdbcType=VARCHAR} and is_stable = 1)
+  </select>
+
+
+  <insert id="insert" parameterType="com.cooler.ai.distribution.entity.DataVersion" useGeneratedKeys="true" keyProperty="id">
+    insert into data_version ( version_name, version_code,
+      domain_name, task_name, is_online, 
+      is_stable, version_update_items, create_time, 
+      update_time)
+    values (#{versionName,jdbcType=VARCHAR}, #{versionCode,jdbcType=REAL},
+      #{domainName,jdbcType=VARCHAR}, #{taskName,jdbcType=VARCHAR}, #{isOnline,jdbcType=TINYINT}, 
+      #{isStable,jdbcType=TINYINT}, #{versionUpdateItems,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{updateTime,jdbcType=TIMESTAMP})
+  </insert>
+
+
+
+</mapper>

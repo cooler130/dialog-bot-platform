@@ -26,13 +26,13 @@
 
     <modules>
 
-        <module>bot-burouter2</module>
+        <module>bot-servers</module>
 
         <module>distribution-entity</module>
         <module>distribution-protocol</module>
         <module>distribution-server</module>
 
-        <module>dm-entity2</module>
+        <module>dm-entity</module>
         <module>dm-protocol</module>
         <module>dm-gdb</module>
 
